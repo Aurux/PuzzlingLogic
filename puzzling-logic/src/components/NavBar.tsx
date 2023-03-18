@@ -1,6 +1,3 @@
-import React from "react";
-import { useHref } from "react-router-dom";
-
 interface Props {
   onChangeContent: (page: string) => void;
 }
@@ -32,7 +29,7 @@ const NavBar = ({ onChangeContent }: Props) => {
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
               <a
-                className="nav-link active"
+                className="nav-link"
                 aria-current="page"
                 href="#Home"
                 onClick={() => onChangeContent("Home")}
