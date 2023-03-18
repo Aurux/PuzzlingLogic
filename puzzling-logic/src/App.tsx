@@ -13,7 +13,9 @@ function App() {
   return (
     <>
       <NavBar onChangeContent={handleContentChange} />
-      {currentPage === "Home" ? <Home /> : null}
+      {currentPage === "Home" ? (
+        <Home onChangeContent={handleContentChange} />
+      ) : null}
       {currentPage === "Play" ? <Play /> : null}
       {currentPage === "About" ? <About /> : null}
     </>

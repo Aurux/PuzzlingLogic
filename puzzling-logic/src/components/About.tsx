@@ -5,12 +5,13 @@ import styled from "styled-components";
 const Wrapper = styled.section`
   padding: 4em;
   background: papayawhip;
+  height: 100%;
 `;
 
 const Title = styled.h1`
   font-size: 1.5em;
   text-align: center;
-  color: palevioletred;
+  color: green;
 `;
 
 const About = () => {
