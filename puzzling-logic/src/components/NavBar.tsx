@@ -1,11 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useHref } from "react-router-dom";
 
-const NavBar = () => {
+interface Props {
+  onChangeContent: (page: string) => void;
+}
+
+const NavBar = ({ onChangeContent }: Props) => {
+  const items = ["Home", "Play", "About"];
   return (
-    <nav className="navbar navbar-expand-lg bg-body-tertiary">
+    <nav className="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
       <div className="container-fluid">
-        <a className="navbar-brand" href="#">
+        <a
+          className="navbar-brand"
+          href="#Home"
+          onClick={() => onChangeContent("Home")}
+        >
           Puzzling Logic
         </a>
         <button
@@ -22,17 +31,30 @@ const NavBar = () => {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <a className="nav-link active" aria-current="page" href="#">
+              <a
+                className="nav-link active"
+                aria-current="page"
+                href="#Home"
+                onClick={() => onChangeContent("Home")}
+              >
                 Home
               </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#">
+              <a
+                className="nav-link"
+                href="#Play"
+                onClick={() => onChangeContent("Play")}
+              >
                 Play
               </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#">
+              <a
+                className="nav-link"
+                href="#About"
+                onClick={() => onChangeContent("About")}
+              >
                 About
               </a>
             </li>
