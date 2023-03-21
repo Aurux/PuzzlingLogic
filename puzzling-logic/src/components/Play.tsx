@@ -1,5 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
+import Xarrow, { Xwrapper, useXarrow } from "react-xarrows";
+import { v4 as uuidv4 } from "uuid";
 
 // Style
 const Wrapper = styled.section`
@@ -71,19 +73,12 @@ const RightItem = styled.div`
   -khtml-user-select: none;
   -webkit-user-select: none;
   -o-user-select: none;
+  cursor: "grab";
 `;
 
 const Scrollable = styled.ul`
   max-height: 60%;
   overflow: auto;
-`;
-
-const Component = styled.img`
-  user-select: none;
-  -moz-user-select: none;
-  -khtml-user-select: none;
-  -webkit-user-select: none;
-  -o-user-select: none;
 `;
 
 const Node = styled.button`
@@ -94,6 +89,8 @@ const Node = styled.button`
   background: #25a07f;
   color: #25a07f;
   display: inline-block;
+  cursor: crosshair;
+  z-index: 10;
 `;
 
 // Image List
@@ -125,7 +122,7 @@ const ImageList = [
 ];
 
 const nodeOffset = [
-  { type: "LED", inputs: { y1: -9.2, x1: -60 } },
+  { type: "LED", inputs: { y1: -8.5, x1: -60 } },
   {
     type: "AND",
     inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
@@ -147,9 +144,11 @@ const nodeOffset = [
 
 const Play = () => {
   // Get states of various things
-  const [content, setContent] = useState<string>("");
-  const [pos, setPos] = useState<number[]>([]);
   const [circuit, setCircuit] = useState<any[]>([]);
+  const [arrows, setArrows] = useState<any[]>([]);
+  const [start, setStart] = useState<string>("");
+  const [compIndex, setCompIndex] = useState<number>(0);
+  const updateXarrow = useXarrow();
 
   // Triggered when drag starts
   const dragStartHandler = (
@@ -163,7 +162,7 @@ const Play = () => {
   const dropHandler = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const data = event.dataTransfer.getData("text");
-    console.log(data);
+    let newData = data.slice(-25);
     if (event.currentTarget.id === "playArea") {
       const yPos = event.clientY;
       const xPos = event.clientX;
@@ -171,49 +170,81 @@ const Play = () => {
       if (type === "LOF") {
         type = "LED";
       }
-      if (type === "SOF") {
+      if (type === "SOF" || type === "SON") {
         type = "INPUT";
       }
       if (type === "ORR") {
         type = "OR";
       }
-      setCircuit((previous) => [
-        ...previous,
-        { type: type, src: data, x: xPos, y: yPos },
-      ]);
-      console.log(circuit);
+
+      // Check if an item with the same src and type already exists in the circuit array
+      const existingItemIndex = circuit.findIndex(
+        (item) => item.src === newData && item.type === type
+      );
+
+      // If it exists and has been added to the playArea before, update its x and y values
+      if (
+        existingItemIndex !== -1 &&
+        circuit[existingItemIndex].addedToPlayArea
+      ) {
+        setCircuit((previous) =>
+          previous.map((item, index) => {
+            if (index === existingItemIndex) {
+              return { ...item, x: xPos, y: yPos };
+            }
+            return item;
+          })
+        );
+      } else {
+        // If it doesn't exist or hasn't been added to the playArea before,
+        // create a new item with a new UUID and set addedToPlayArea to true
+        setCircuit((previous) => [
+          ...previous,
+          {
+            id: uuidv4(),
+            type: type,
+            src: newData,
+            x: xPos,
+            y: yPos,
+            addedToPlayArea: true,
+          },
+        ]);
+      }
     }
+    console.log(circuit);
+    updateXarrow();
   };
 
   // This makes box become droppable
   const allowDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    console.log(event.currentTarget.id);
   };
 
   // Reset play area
   const resetPlay = () => {
     setCircuit((previous) => []);
+    setArrows((previous) => []);
   };
 
-  // For moving components that are in the play area
-  const moveComp = (event: React.DragEvent<HTMLDivElement>) => {
-    const id = event.currentTarget.id;
-    //const document.getElementById('playArea')?.offsetLeft
-    const yPos = event.clientY;
-    const xPos = event.clientX;
-    setCircuit(
-      circuit.map((item, index) =>
-        index === parseInt(id) ? { ...item, x: xPos, y: yPos } : { ...item }
-      )
-    );
+  const printArrows = () => {
+    console.log(arrows);
+  };
 
-    console.log(id);
+  const handleNodeStart = (event) => {
+    setStart(event.currentTarget.id);
+    console.log(start.slice(1, 3));
+  };
+
+  const handleNodeEnd = (event) => {
+    setArrows((previous) => [
+      ...previous,
+      { start: start, end: event.target.id },
+    ]);
+    setStart((previous) => "");
   };
 
   // Set node buttons
   function setupNodes(type: string, componentInd: number, itemPos: number[]) {
-    console.log("here: " + type);
     let index = 0;
     for (let i = 0; i < nodeOffset.length; i++) {
       if (nodeOffset[i].type === type) {
@@ -226,6 +257,8 @@ const Play = () => {
         <Node
           id={componentInd.toString() + "input0"}
           className={componentInd.toString() + "input0"}
+          onMouseDown={handleNodeStart}
+          onMouseUp={handleNodeEnd}
           style={{
             position: "fixed",
 
@@ -241,6 +274,8 @@ const Play = () => {
           <Node
             id={componentInd.toString() + "input1"}
             className={componentInd.toString() + "input1"}
+            onMouseDown={handleNodeStart}
+            onMouseUp={handleNodeEnd}
             style={{
               position: "fixed",
 
@@ -258,6 +293,8 @@ const Play = () => {
         <Node
           id={componentInd.toString() + "output0"}
           className={componentInd.toString() + "output0"}
+          onMouseDown={handleNodeStart}
+          onMouseUp={handleNodeEnd}
           style={{
             position: "fixed",
 
@@ -273,6 +310,37 @@ const Play = () => {
     return returnArr;
   }
 
+  const switchInput = (index: number) => {
+    console.log(circuit[index].src);
+    switch (circuit[index].src) {
+      case "/src/assets/gates/sof.png":
+        setCircuit(
+          circuit.map((item, ind) =>
+            ind === index
+              ? { ...item, src: "/src/assets/gates/son.png" }
+              : { ...item }
+          )
+        );
+        console.log(circuit[index].src);
+        break;
+      case "/src/assets/gates/son.png":
+        setCircuit(
+          circuit.map((item, ind) =>
+            ind === index
+              ? { ...item, src: "/src/assets/gates/sof.png" }
+              : { ...item }
+          )
+        );
+        break;
+      default:
+        break;
+    }
+  };
+
+  const updateArr = (event) => {
+    updateXarrow();
+  };
+
   return (
     <Wrapper>
       <Toolbox id="toolbox">
@@ -285,7 +353,11 @@ const Play = () => {
           <button type="button" className="btn btn-danger" onClick={resetPlay}>
             Reset
           </button>
-          <button type="button" className="btn btn-warning">
+          <button
+            type="button"
+            className="btn btn-warning"
+            onClick={printArrows}
+          >
             Pause
           </button>
           <button type="button" className="btn btn-success">
@@ -332,25 +404,45 @@ const Play = () => {
         </Scrollable>
       </Toolbox>
       <PlayArea id="playArea" onDragOver={allowDrop} onDrop={dropHandler}>
-        <canvas>
+        <Xwrapper>
           {circuit.map((item, index) => (
-            <div>
+            <div id={item.id}>
               <img
                 key={index}
-                id={index.toString()}
+                id={item.id}
+                className="compo"
                 src={item.src}
                 style={{
                   position: "fixed",
                   width: "100px",
                   left: item.x - 50,
                   top: item.y - 25,
+                  cursor: "move",
+                  zIndex: 5,
                 }}
-                onDrag={moveComp}
+                onDrop={updateArr}
+                onClick={
+                  item.type === "INPUT" ? () => switchInput(index) : null
+                }
               />
-              {setupNodes(item.type, index, [item.x, item.y])}
+              {setupNodes(item.type, item.id, [item.x, item.y])}
             </div>
           ))}
-        </canvas>
+          {arrows.map((ar) => (
+            <Xarrow
+              showHead={false}
+              curveness={0.5}
+              animateDrawing={true}
+              path="grid"
+              start={ar.start}
+              end={ar.end}
+              startAnchor={ar.start.slice(1, 3) === "ou" ? "right" : "left"}
+              endAnchor={ar.end.slice(1, 3) === "ou" ? "left" : "right"}
+              key={ar.start + "-." + ar.start}
+              zIndex={1}
+            />
+          ))}
+        </Xwrapper>
       </PlayArea>
     </Wrapper>
   );
