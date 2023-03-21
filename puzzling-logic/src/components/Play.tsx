@@ -1,8 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import styled from "styled-components";
-import { DndProvider, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import Image from "./Image";
 
 // Style
 const Wrapper = styled.section`
@@ -89,15 +86,25 @@ const Component = styled.img`
   -o-user-select: none;
 `;
 
+const Node = styled.button`
+  font-size: 10px;
+  width: 20px;
+  border: solid black;
+  border-radius: 50%;
+  background: #25a07f;
+  color: #25a07f;
+  display: inline-block;
+`;
+
 // Image List
 const ImageList = [
   {
     id: 0,
-    src: "/src/assets/gates/led_off.png",
+    src: "/src/assets/gates/lof.png",
   },
   {
     id: 1,
-    src: "/src/assets/gates/switch-off.png",
+    src: "/src/assets/gates/sof.png",
   },
   {
     id: 2,
@@ -109,7 +116,7 @@ const ImageList = [
   },
   {
     id: 4,
-    src: "/src/assets/gates/or.png",
+    src: "/src/assets/gates/orr.png",
   },
   {
     id: 5,
@@ -117,13 +124,25 @@ const ImageList = [
   },
 ];
 
-const Circuit = [
+const nodeOffset = [
+  { type: "LED", inputs: { y1: -9.2, x1: -60 } },
   {
-    id: null,
     type: "AND",
-    src: "",
-    state: null,
+    inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
+    outputs: { y1: -14, x1: 42 },
   },
+  {
+    type: "OR",
+    inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
+    outputs: { y1: -14, x1: 42 },
+  },
+  {
+    type: "XOR",
+    inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
+    outputs: { y1: -14, x1: 42 },
+  },
+  { type: "NOT", inputs: { y1: -13, x1: -60 }, outputs: { y1: -13, x1: 42 } },
+  { type: "INPUT", outputs: { y1: -10, x1: 45 } },
 ];
 
 const Play = () => {
@@ -148,7 +167,20 @@ const Play = () => {
     if (event.currentTarget.id === "playArea") {
       const yPos = event.clientY;
       const xPos = event.clientX;
-      setCircuit((previous) => [...previous, { data: data, x: xPos, y: yPos }]);
+      let type = data.slice(-7, -4).toUpperCase();
+      if (type === "LOF") {
+        type = "LED";
+      }
+      if (type === "SOF") {
+        type = "INPUT";
+      }
+      if (type === "ORR") {
+        type = "OR";
+      }
+      setCircuit((previous) => [
+        ...previous,
+        { type: type, src: data, x: xPos, y: yPos },
+      ]);
       console.log(circuit);
     }
   };
@@ -175,8 +207,72 @@ const Play = () => {
         index === parseInt(id) ? { ...item, x: xPos, y: yPos } : { ...item }
       )
     );
+
     console.log(id);
   };
+
+  // Set node buttons
+  function setupNodes(type: string, componentInd: number, itemPos: number[]) {
+    console.log("here: " + type);
+    let index = 0;
+    for (let i = 0; i < nodeOffset.length; i++) {
+      if (nodeOffset[i].type === type) {
+        index = i;
+      }
+    }
+    var returnArr = [];
+    if (typeof nodeOffset[index].inputs !== "undefined") {
+      returnArr.push(
+        <Node
+          id={componentInd.toString() + "input0"}
+          className={componentInd.toString() + "input0"}
+          style={{
+            position: "fixed",
+
+            left: itemPos[0] + nodeOffset[index].inputs.x1,
+            top: itemPos[1] + nodeOffset[index].inputs.y1,
+          }}
+        >
+          B
+        </Node>
+      );
+      if (typeof nodeOffset[index].inputs.y2 !== "undefined") {
+        returnArr.push(
+          <Node
+            id={componentInd.toString() + "input1"}
+            className={componentInd.toString() + "input1"}
+            style={{
+              position: "fixed",
+
+              left: itemPos[0] + nodeOffset[index].inputs.x2,
+              top: itemPos[1] + nodeOffset[index].inputs.y2,
+            }}
+          >
+            B
+          </Node>
+        );
+      }
+    }
+    if (typeof nodeOffset[index].outputs !== "undefined") {
+      returnArr.push(
+        <Node
+          id={componentInd.toString() + "output0"}
+          className={componentInd.toString() + "output0"}
+          style={{
+            position: "fixed",
+
+            left: itemPos[0] + nodeOffset[index].outputs.x1,
+            top: itemPos[1] + nodeOffset[index].outputs.y1,
+          }}
+        >
+          B
+        </Node>
+      );
+    }
+
+    return returnArr;
+  }
+
   return (
     <Wrapper>
       <Toolbox id="toolbox">
@@ -236,20 +332,25 @@ const Play = () => {
         </Scrollable>
       </Toolbox>
       <PlayArea id="playArea" onDragOver={allowDrop} onDrop={dropHandler}>
-        {circuit.map((item, index) => (
-          <img
-            key={index}
-            id={index.toString()}
-            src={item.data}
-            style={{
-              position: "fixed",
-              width: "100px",
-              left: item.x - 50,
-              top: item.y - 25,
-            }}
-            onDrag={moveComp}
-          />
-        ))}
+        <canvas>
+          {circuit.map((item, index) => (
+            <div>
+              <img
+                key={index}
+                id={index.toString()}
+                src={item.src}
+                style={{
+                  position: "fixed",
+                  width: "100px",
+                  left: item.x - 50,
+                  top: item.y - 25,
+                }}
+                onDrag={moveComp}
+              />
+              {setupNodes(item.type, index, [item.x, item.y])}
+            </div>
+          ))}
+        </canvas>
       </PlayArea>
     </Wrapper>
   );
