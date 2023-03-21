@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
-import Draggable from "react-draggable";
+import { DndProvider, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import Image from "./Image";
 
 // Style
 const Wrapper = styled.section`
@@ -25,7 +27,9 @@ const PlayArea = styled.div`
 `;
 
 const Toolbox = styled.div`
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   float: left;
   width: 20%;
   border: solid #444853;
@@ -53,6 +57,11 @@ const LeftItem = styled.div`
   position: relative;
   float: left;
   font-size: larger;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
 `;
 
 const RightItem = styled.div`
@@ -60,77 +69,189 @@ const RightItem = styled.div`
   position: relative;
   float: right;
   width: 50%;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
 `;
 
 const Scrollable = styled.ul`
-  max-height: 45em;
+  max-height: 60%;
   overflow: auto;
 `;
 
+const Component = styled.img`
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+`;
+
+// Image List
+const ImageList = [
+  {
+    id: 0,
+    src: "/src/assets/gates/led_off.png",
+  },
+  {
+    id: 1,
+    src: "/src/assets/gates/switch-off.png",
+  },
+  {
+    id: 2,
+    src: "/src/assets/gates/and.png",
+  },
+  {
+    id: 3,
+    src: "/src/assets/gates/not.png",
+  },
+  {
+    id: 4,
+    src: "/src/assets/gates/or.png",
+  },
+  {
+    id: 5,
+    src: "/src/assets/gates/xor.png",
+  },
+];
+
+const Circuit = [
+  {
+    id: null,
+    type: "AND",
+    src: "",
+    state: null,
+  },
+];
+
 const Play = () => {
+  // Get states of various things
+  const [content, setContent] = useState<string>("");
+  const [pos, setPos] = useState<number[]>([]);
+  const [circuit, setCircuit] = useState<any[]>([]);
+
+  // Triggered when drag starts
+  const dragStartHandler = (
+    event: React.DragEvent<HTMLDivElement>,
+    data: string
+  ) => {
+    event.dataTransfer.setData("text", data);
+  };
+
+  // Triggered when dropping
+  const dropHandler = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const data = event.dataTransfer.getData("text");
+    console.log(data);
+    if (event.currentTarget.id === "playArea") {
+      const yPos = event.clientY;
+      const xPos = event.clientX;
+      setCircuit((previous) => [...previous, { data: data, x: xPos, y: yPos }]);
+      console.log(circuit);
+    }
+  };
+
+  // This makes box become droppable
+  const allowDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    console.log(event.currentTarget.id);
+  };
+
+  // Reset play area
+  const resetPlay = () => {
+    setCircuit((previous) => []);
+  };
+
+  // For moving components that are in the play area
+  const moveComp = (event: React.DragEvent<HTMLDivElement>) => {
+    const id = event.currentTarget.id;
+    //const document.getElementById('playArea')?.offsetLeft
+    const yPos = event.clientY;
+    const xPos = event.clientX;
+    setCircuit(
+      circuit.map((item, index) =>
+        index === parseInt(id) ? { ...item, x: xPos, y: yPos } : { ...item }
+      )
+    );
+    console.log(id);
+  };
   return (
-    <>
-      <Wrapper>
-        <Toolbox>
-          <Buttons
-            className="btn-group"
-            role="group"
-            aria-label="Basic mixed styles example"
-          >
-            <button type="button" className="btn btn-danger">
-              Reset
-            </button>
-            <button type="button" className="btn btn-warning">
-              Pause
-            </button>
-            <button type="button" className="btn btn-success">
-              Run
-            </button>
-          </Buttons>
-          <Scrollable className="list-group">
-            <ListItem className="list-group-item">
-              <LeftItem>LED&emsp;&emsp;</LeftItem>
-              <RightItem>
-                <Draggable>
-                  <GateIcon src="/src/assets/gates/led_off.png" />
-                </Draggable>
-              </RightItem>
-            </ListItem>
-            <ListItem className="list-group-item">
-              <LeftItem>Input&emsp;&emsp;</LeftItem>
-              <RightItem>
-                <GateIcon src="/src/assets/gates/switch-off.png" />
-              </RightItem>
-            </ListItem>
-            <ListItem className="list-group-item">
-              <LeftItem>AND gate&emsp;&emsp;</LeftItem>
-              <RightItem>
-                <GateIcon src="/src/assets/gates/and.png" />
-              </RightItem>
-            </ListItem>
-            <ListItem className="list-group-item">
-              <LeftItem>NOT gate&emsp;&emsp;</LeftItem>
-              <RightItem>
-                <GateIcon src="/src/assets/gates/not.png" />
-              </RightItem>
-            </ListItem>
-            <ListItem className="list-group-item">
-              <LeftItem>OR gate&emsp;&emsp;</LeftItem>
-              <RightItem>
-                <GateIcon src="/src/assets/gates/or.png" />
-              </RightItem>
-            </ListItem>
-            <ListItem className="list-group-item">
-              <LeftItem>XOR gate&emsp;&emsp;</LeftItem>
-              <RightItem>
-                <GateIcon src="/src/assets/gates/xor.png" />
-              </RightItem>
-            </ListItem>
-          </Scrollable>
-        </Toolbox>
-        <PlayArea></PlayArea>
-      </Wrapper>
-    </>
+    <Wrapper>
+      <Toolbox id="toolbox">
+        <img src="/src/assets/chip2.png" />
+        <Buttons
+          className="btn-group"
+          role="group"
+          aria-label="Basic mixed styles example"
+        >
+          <button type="button" className="btn btn-danger" onClick={resetPlay}>
+            Reset
+          </button>
+          <button type="button" className="btn btn-warning">
+            Pause
+          </button>
+          <button type="button" className="btn btn-success">
+            Run
+          </button>
+        </Buttons>
+        <Scrollable className="list-group">
+          <ListItem className="list-group-item">
+            <LeftItem>LED&emsp;&emsp;</LeftItem>
+            <RightItem>
+              <GateIcon src={ImageList[0].src} />
+            </RightItem>
+          </ListItem>
+          <ListItem className="list-group-item">
+            <LeftItem>Input&emsp;&emsp;</LeftItem>
+            <RightItem>
+              <GateIcon src={ImageList[1].src} />
+            </RightItem>
+          </ListItem>
+          <ListItem className="list-group-item">
+            <LeftItem>AND gate&emsp;&emsp;</LeftItem>
+            <RightItem>
+              <GateIcon src={ImageList[2].src} />
+            </RightItem>
+          </ListItem>
+          <ListItem className="list-group-item">
+            <LeftItem>NOT gate&emsp;&emsp;</LeftItem>
+            <RightItem>
+              <GateIcon src={ImageList[3].src} />
+            </RightItem>
+          </ListItem>
+          <ListItem className="list-group-item">
+            <LeftItem>OR gate&emsp;&emsp;</LeftItem>
+            <RightItem>
+              <GateIcon src={ImageList[4].src} />
+            </RightItem>
+          </ListItem>
+          <ListItem className="list-group-item">
+            <LeftItem>XOR gate&emsp;&emsp;</LeftItem>
+            <RightItem>
+              <GateIcon src={ImageList[5].src} />
+            </RightItem>
+          </ListItem>
+        </Scrollable>
+      </Toolbox>
+      <PlayArea id="playArea" onDragOver={allowDrop} onDrop={dropHandler}>
+        {circuit.map((item, index) => (
+          <img
+            key={index}
+            id={index.toString()}
+            src={item.data}
+            style={{
+              position: "fixed",
+              width: "100px",
+              left: item.x - 50,
+              top: item.y - 25,
+            }}
+            onDrag={moveComp}
+          />
+        ))}
+      </PlayArea>
+    </Wrapper>
   );
 };
 
