@@ -148,7 +148,8 @@ const Play = () => {
   const [arrows, setArrows] = useState<any[]>([]);
   const [start, setStart] = useState<string>("");
   const [compIndex, setCompIndex] = useState<number>(0);
-  const updateXarrow = useXarrow();
+  const [toolDrag, setToolDrag] = useState<boolean>(false);
+  const [draggedID, setDraggedID] = useState<any>("");
 
   // Triggered when drag starts
   const dragStartHandler = (
@@ -161,6 +162,9 @@ const Play = () => {
   // Triggered when dropping
   const dropHandler = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
+
+    console.log("draggedID: " + draggedID);
+    console.log("toolDrag " + toolDrag);
     const data = event.dataTransfer.getData("text");
     let newData = data.slice(-25);
     if (event.currentTarget.id === "playArea") {
@@ -177,16 +181,16 @@ const Play = () => {
         type = "OR";
       }
 
-      // Check if an item with the same src and type already exists in the circuit array
       const existingItemIndex = circuit.findIndex(
-        (item) => item.src === newData && item.type === type
+        (item) =>
+          item.src === newData &&
+          item.type === type &&
+          item.addedToPlayArea &&
+          item.id === draggedID
       );
 
       // If it exists and has been added to the playArea before, update its x and y values
-      if (
-        existingItemIndex !== -1 &&
-        circuit[existingItemIndex].addedToPlayArea
-      ) {
+      if (existingItemIndex !== -1 && toolDrag === false) {
         setCircuit((previous) =>
           previous.map((item, index) => {
             if (index === existingItemIndex) {
@@ -209,10 +213,11 @@ const Play = () => {
             addedToPlayArea: true,
           },
         ]);
+        setToolDrag(false);
+        setDraggedID("");
       }
     }
     console.log(circuit);
-    updateXarrow();
   };
 
   // This makes box become droppable
@@ -224,10 +229,6 @@ const Play = () => {
   const resetPlay = () => {
     setCircuit((previous) => []);
     setArrows((previous) => []);
-  };
-
-  const printArrows = () => {
-    console.log(arrows);
   };
 
   const handleNodeStart = (event) => {
@@ -337,8 +338,41 @@ const Play = () => {
     }
   };
 
-  const updateArr = (event) => {
-    updateXarrow();
+  const CircuitComponent = ({ id }) => {
+    const updateXarrow = useXarrow();
+    let index = 0;
+    for (let i = 0; i < circuit.length; i++) {
+      if (circuit[i].id === id) {
+        index = i;
+      }
+    }
+    return (
+      <img
+        id={id}
+        className="compo"
+        src={circuit[index].src}
+        style={{
+          position: "fixed",
+          width: "100px",
+          left: circuit[index].x - 50,
+          top: circuit[index].y - 25,
+          cursor: "move",
+          zIndex: 5,
+        }}
+        onDrag={() => {
+          console.log("onDragStart called");
+          setDraggedID(id);
+        }}
+        onDragEnd={() => {
+          setTimeout(() => {
+            updateXarrow();
+          }, 500);
+        }}
+        onClick={
+          circuit[index].type === "INPUT" ? () => switchInput(index) : null
+        }
+      />
+    );
   };
 
   return (
@@ -353,11 +387,7 @@ const Play = () => {
           <button type="button" className="btn btn-danger" onClick={resetPlay}>
             Reset
           </button>
-          <button
-            type="button"
-            className="btn btn-warning"
-            onClick={printArrows}
-          >
+          <button type="button" className="btn btn-warning">
             Pause
           </button>
           <button type="button" className="btn btn-success">
@@ -368,37 +398,55 @@ const Play = () => {
           <ListItem className="list-group-item">
             <LeftItem>LED&emsp;&emsp;</LeftItem>
             <RightItem>
-              <GateIcon src={ImageList[0].src} />
+              <GateIcon
+                src={ImageList[0].src}
+                onDragStart={() => setToolDrag(true)}
+              />
             </RightItem>
           </ListItem>
           <ListItem className="list-group-item">
             <LeftItem>Input&emsp;&emsp;</LeftItem>
             <RightItem>
-              <GateIcon src={ImageList[1].src} />
+              <GateIcon
+                src={ImageList[1].src}
+                onDragStart={() => setToolDrag(true)}
+              />
             </RightItem>
           </ListItem>
           <ListItem className="list-group-item">
             <LeftItem>AND gate&emsp;&emsp;</LeftItem>
             <RightItem>
-              <GateIcon src={ImageList[2].src} />
+              <GateIcon
+                src={ImageList[2].src}
+                onDragStart={() => setToolDrag(true)}
+              />
             </RightItem>
           </ListItem>
           <ListItem className="list-group-item">
             <LeftItem>NOT gate&emsp;&emsp;</LeftItem>
             <RightItem>
-              <GateIcon src={ImageList[3].src} />
+              <GateIcon
+                src={ImageList[3].src}
+                onDragStart={() => setToolDrag(true)}
+              />
             </RightItem>
           </ListItem>
           <ListItem className="list-group-item">
             <LeftItem>OR gate&emsp;&emsp;</LeftItem>
             <RightItem>
-              <GateIcon src={ImageList[4].src} />
+              <GateIcon
+                src={ImageList[4].src}
+                onDragStart={() => setToolDrag(true)}
+              />
             </RightItem>
           </ListItem>
           <ListItem className="list-group-item">
             <LeftItem>XOR gate&emsp;&emsp;</LeftItem>
             <RightItem>
-              <GateIcon src={ImageList[5].src} />
+              <GateIcon
+                src={ImageList[5].src}
+                onDragStart={() => setToolDrag(true)}
+              />
             </RightItem>
           </ListItem>
         </Scrollable>
@@ -407,37 +455,20 @@ const Play = () => {
         <Xwrapper>
           {circuit.map((item, index) => (
             <div id={item.id}>
-              <img
-                key={index}
-                id={item.id}
-                className="compo"
-                src={item.src}
-                style={{
-                  position: "fixed",
-                  width: "100px",
-                  left: item.x - 50,
-                  top: item.y - 25,
-                  cursor: "move",
-                  zIndex: 5,
-                }}
-                onDrop={updateArr}
-                onClick={
-                  item.type === "INPUT" ? () => switchInput(index) : null
-                }
-              />
+              <CircuitComponent id={item.id} />
               {setupNodes(item.type, item.id, [item.x, item.y])}
             </div>
           ))}
           {arrows.map((ar) => (
             <Xarrow
               showHead={false}
-              curveness={0.5}
+              //curveness={0.5}
               animateDrawing={true}
               path="grid"
               start={ar.start}
               end={ar.end}
-              startAnchor={ar.start.slice(1, 3) === "ou" ? "right" : "left"}
-              endAnchor={ar.end.slice(1, 3) === "ou" ? "left" : "right"}
+              //startAnchor={ar.start.slice(1, 3) === "ou" ? "right" : "left"}
+              //endAnchor={ar.end.slice(1, 3) === "ou" ? "left" : "right"}
               key={ar.start + "-." + ar.start}
               zIndex={1}
             />
