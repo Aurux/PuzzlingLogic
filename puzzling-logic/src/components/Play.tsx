@@ -163,8 +163,6 @@ const Play = () => {
   const dropHandler = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
 
-    console.log("draggedID: " + draggedID);
-    console.log("toolDrag " + toolDrag);
     const data = event.dataTransfer.getData("text");
     let newData = data.slice(-25);
     if (event.currentTarget.id === "playArea") {
@@ -211,13 +209,13 @@ const Play = () => {
             x: xPos,
             y: yPos,
             addedToPlayArea: true,
+            outputHigh: false,
           },
         ]);
         setToolDrag(false);
         setDraggedID("");
       }
     }
-    console.log(circuit);
   };
 
   // This makes box become droppable
@@ -239,8 +237,9 @@ const Play = () => {
   const handleNodeEnd = (event) => {
     setArrows((previous) => [
       ...previous,
-      { start: start, end: event.target.id },
+      { start: start, end: event.target.id, active: false },
     ]);
+    console.log(arrows);
     setStart((previous) => "");
   };
 
@@ -256,8 +255,7 @@ const Play = () => {
     if (typeof nodeOffset[index].inputs !== "undefined") {
       returnArr.push(
         <Node
-          id={componentInd.toString() + "input0"}
-          className={componentInd.toString() + "input0"}
+          id={componentInd.toString() + "-input0"}
           onMouseDown={handleNodeStart}
           onMouseUp={handleNodeEnd}
           style={{
@@ -273,8 +271,7 @@ const Play = () => {
       if (typeof nodeOffset[index].inputs.y2 !== "undefined") {
         returnArr.push(
           <Node
-            id={componentInd.toString() + "input1"}
-            className={componentInd.toString() + "input1"}
+            id={componentInd.toString() + "-input1"}
             onMouseDown={handleNodeStart}
             onMouseUp={handleNodeEnd}
             style={{
@@ -292,8 +289,7 @@ const Play = () => {
     if (typeof nodeOffset[index].outputs !== "undefined") {
       returnArr.push(
         <Node
-          id={componentInd.toString() + "output0"}
-          className={componentInd.toString() + "output0"}
+          id={componentInd.toString() + "-output0"}
           onMouseDown={handleNodeStart}
           onMouseUp={handleNodeEnd}
           style={{
@@ -318,7 +314,7 @@ const Play = () => {
         setCircuit(
           circuit.map((item, ind) =>
             ind === index
-              ? { ...item, src: "/src/assets/gates/son.png" }
+              ? { ...item, src: "/src/assets/gates/son.png", outputHigh: true }
               : { ...item }
           )
         );
@@ -328,7 +324,7 @@ const Play = () => {
         setCircuit(
           circuit.map((item, ind) =>
             ind === index
-              ? { ...item, src: "/src/assets/gates/sof.png" }
+              ? { ...item, src: "/src/assets/gates/sof.png", outputHigh: false }
               : { ...item }
           )
         );
@@ -360,7 +356,6 @@ const Play = () => {
           zIndex: 5,
         }}
         onDrag={() => {
-          console.log("onDragStart called");
           setDraggedID(id);
         }}
         onDragEnd={() => {
@@ -369,10 +364,43 @@ const Play = () => {
           }, 500);
         }}
         onClick={
-          circuit[index].type === "INPUT" ? () => switchInput(index) : null
+          circuit[index].type === "INPUT"
+            ? () => {
+                switchInput(index);
+              }
+            : null
         }
       />
     );
+  };
+
+  const simLogic = () => {
+    const inputItemList = circuit.filter((item) => item.type === "INPUT");
+    console.log(inputItemList);
+    let updatedArrows = [...arrows];
+    for (let i = 0; i < inputItemList.length; i++) {
+      if (inputItemList[i].outputHigh === true) {
+        updatedArrows = updatedArrows.map((arrow) =>
+          arrow.start.slice(0, 36) === inputItemList[i].id ||
+          arrow.end.slice(0, 36) === inputItemList[i].id
+            ? { ...arrow, active: true }
+            : { ...arrow }
+        );
+        console.log("here");
+      } else {
+        updatedArrows = updatedArrows.map((arrow) =>
+          arrow.start.slice(0, 36) === inputItemList[i].id ||
+          arrow.end.slice(0, 36) === inputItemList[i].id
+            ? { ...arrow, active: false }
+            : { ...arrow }
+        );
+      }
+    }
+    setArrows(updatedArrows);
+  };
+
+  const arrowStates = () => {
+    console.log(arrows);
   };
 
   return (
@@ -387,10 +415,14 @@ const Play = () => {
           <button type="button" className="btn btn-danger" onClick={resetPlay}>
             Reset
           </button>
-          <button type="button" className="btn btn-warning">
+          <button
+            type="button"
+            className="btn btn-warning"
+            onClick={arrowStates}
+          >
             Pause
           </button>
-          <button type="button" className="btn btn-success">
+          <button type="button" className="btn btn-success" onClick={simLogic}>
             Run
           </button>
         </Buttons>
@@ -455,21 +487,22 @@ const Play = () => {
         <Xwrapper>
           {circuit.map((item, index) => (
             <div id={item.id}>
-              <CircuitComponent id={item.id} />
+              <CircuitComponent id={item.id} key={item.id} />
               {setupNodes(item.type, item.id, [item.x, item.y])}
             </div>
           ))}
           {arrows.map((ar) => (
             <Xarrow
               showHead={false}
-              //curveness={0.5}
+              showTail={false}
               animateDrawing={true}
               path="grid"
               start={ar.start}
               end={ar.end}
+              color={ar.active === true ? "#25A07F" : "#444853"}
               //startAnchor={ar.start.slice(1, 3) === "ou" ? "right" : "left"}
               //endAnchor={ar.end.slice(1, 3) === "ou" ? "left" : "right"}
-              key={ar.start + "-." + ar.start}
+              key={ar.start + "-." + ar.end}
               zIndex={1}
             />
           ))}
