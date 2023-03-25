@@ -460,6 +460,54 @@ const Play = () => {
         }
       }
 
+      // Process logic for OR
+      if (item.type === "OR") {
+        let inputArrows0 = updatedArrows.some(
+          (arrow) => arrow.end === item.id + "-input0" && arrow.active === true
+        );
+        let inputArrows1 = updatedArrows.some(
+          (arrow) => arrow.end === item.id + "-input1" && arrow.active === true
+        );
+        let outputArrows = updatedArrows.filter(
+          (arrow) => arrow.start === item.id + "-output0"
+        );
+
+        for (let j = 0; j < outputArrows.length; j++) {
+          for (let k = 0; k < updatedArrows.length; k++) {
+            if (
+              updatedArrows[k].start === outputArrows[j].start ||
+              updatedArrows[k].end === outputArrows[j].end
+            ) {
+              updatedArrows[k].active = inputArrows0 || inputArrows1;
+            }
+          }
+        }
+      }
+
+      // Process logic for XOR
+      if (item.type === "XOR") {
+        let inputArrows0 = updatedArrows.some(
+          (arrow) => arrow.end === item.id + "-input0" && arrow.active === true
+        );
+        let inputArrows1 = updatedArrows.some(
+          (arrow) => arrow.end === item.id + "-input1" && arrow.active === true
+        );
+        let outputArrows = updatedArrows.filter(
+          (arrow) => arrow.start === item.id + "-output0"
+        );
+
+        for (let j = 0; j < outputArrows.length; j++) {
+          for (let k = 0; k < updatedArrows.length; k++) {
+            if (
+              updatedArrows[k].start === outputArrows[j].start ||
+              updatedArrows[k].end === outputArrows[j].end
+            ) {
+              updatedArrows[k].active = inputArrows0 != inputArrows1;
+            }
+          }
+        }
+      }
+
       // Process logic for LEDs
 
       if (item.type === "LED") {
