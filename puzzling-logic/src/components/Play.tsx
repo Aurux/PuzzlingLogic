@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Xarrow, { Xwrapper, useXarrow } from "react-xarrows";
 import { v4 as uuidv4 } from "uuid";
@@ -119,6 +119,14 @@ const ImageList = [
     id: 5,
     src: "/src/assets/gates/xor.png",
   },
+  {
+    id: 6,
+    src: "/src/assets/gates/lon.png",
+  },
+  {
+    id: 7,
+    src: "/src/assets/gates/son.png",
+  },
 ];
 
 const nodeOffset = [
@@ -169,7 +177,7 @@ const Play = () => {
       const yPos = event.clientY;
       const xPos = event.clientX;
       let type = data.slice(-7, -4).toUpperCase();
-      if (type === "LOF") {
+      if (type === "LOF" || type === "LON") {
         type = "LED";
       }
       if (type === "SOF" || type === "SON") {
@@ -181,10 +189,7 @@ const Play = () => {
 
       const existingItemIndex = circuit.findIndex(
         (item) =>
-          item.src === newData &&
-          item.type === type &&
-          item.addedToPlayArea &&
-          item.id === draggedID
+          item.type === type && item.addedToPlayArea && item.id === draggedID
       );
 
       // If it exists and has been added to the playArea before, update its x and y values
@@ -200,6 +205,7 @@ const Play = () => {
       } else {
         // If it doesn't exist or hasn't been added to the playArea before,
         // create a new item with a new UUID and set addedToPlayArea to true
+        let output = type === "NOT" ? true : false;
         setCircuit((previous) => [
           ...previous,
           {
@@ -209,7 +215,7 @@ const Play = () => {
             x: xPos,
             y: yPos,
             addedToPlayArea: true,
-            outputHigh: false,
+            outputHigh: output,
           },
         ]);
         setToolDrag(false);
@@ -231,16 +237,27 @@ const Play = () => {
 
   const handleNodeStart = (event) => {
     setStart(event.currentTarget.id);
-    console.log(start.slice(1, 3));
   };
 
   const handleNodeEnd = (event) => {
-    setArrows((previous) => [
-      ...previous,
-      { start: start, end: event.target.id, active: false },
-    ]);
-    console.log(arrows);
+    if (start !== event.target.id) {
+      setArrows((previous) => [
+        ...previous,
+        { start: start, end: event.target.id, active: false, key: uuidv4() },
+      ]);
+    }
+
     setStart((previous) => "");
+  };
+
+  const handleClearConnections = (event) => {
+    const arrowsToKeep = arrows.filter(
+      (item) =>
+        !(item.start === event.target.id || item.end === event.target.id)
+    );
+    console.log(arrowsToKeep);
+    console.log(event.target.id);
+    setArrows(arrowsToKeep);
   };
 
   // Set node buttons
@@ -256,7 +273,6 @@ const Play = () => {
       returnArr.push(
         <Node
           id={componentInd.toString() + "-input0"}
-          onMouseDown={handleNodeStart}
           onMouseUp={handleNodeEnd}
           style={{
             position: "fixed",
@@ -264,6 +280,7 @@ const Play = () => {
             left: itemPos[0] + nodeOffset[index].inputs.x1,
             top: itemPos[1] + nodeOffset[index].inputs.y1,
           }}
+          onDoubleClick={handleClearConnections}
         >
           B
         </Node>
@@ -272,7 +289,6 @@ const Play = () => {
         returnArr.push(
           <Node
             id={componentInd.toString() + "-input1"}
-            onMouseDown={handleNodeStart}
             onMouseUp={handleNodeEnd}
             style={{
               position: "fixed",
@@ -280,6 +296,7 @@ const Play = () => {
               left: itemPos[0] + nodeOffset[index].inputs.x2,
               top: itemPos[1] + nodeOffset[index].inputs.y2,
             }}
+            onDoubleClick={handleClearConnections}
           >
             B
           </Node>
@@ -291,13 +308,13 @@ const Play = () => {
         <Node
           id={componentInd.toString() + "-output0"}
           onMouseDown={handleNodeStart}
-          onMouseUp={handleNodeEnd}
           style={{
             position: "fixed",
 
             left: itemPos[0] + nodeOffset[index].outputs.x1,
             top: itemPos[1] + nodeOffset[index].outputs.y1,
           }}
+          onDoubleClick={handleClearConnections}
         >
           B
         </Node>
@@ -306,25 +323,184 @@ const Play = () => {
 
     return returnArr;
   }
+  const switchOutput = (id: string, state: boolean) => {
+    const foundItem = circuit.find((item) => item.id === id);
 
-  const switchInput = (index: number) => {
-    console.log(circuit[index].src);
-    switch (circuit[index].src) {
-      case "/src/assets/gates/sof.png":
+    switch (state) {
+      case true:
         setCircuit(
-          circuit.map((item, ind) =>
-            ind === index
-              ? { ...item, src: "/src/assets/gates/son.png", outputHigh: true }
+          circuit.map((item) =>
+            item.id === foundItem.id
+              ? { ...item, outputHigh: true }
               : { ...item }
           )
         );
-        console.log(circuit[index].src);
+
+        break;
+      case false:
+        setCircuit(
+          circuit.map((item) =>
+            item.id === foundItem.id
+              ? { ...item, outputHigh: false }
+              : { ...item }
+          )
+        );
+        break;
+      default:
+        break;
+    }
+  };
+
+  function topologicalSort(circuit, arrows) {
+    // Create an adjacency list to represent the DAG
+    let graph = {};
+    circuit.forEach((item) => {
+      graph[item.id] = [];
+    });
+    arrows.forEach((arrow) => {
+      graph[arrow.start.slice(0, 36)].push(arrow.end.slice(0, 36));
+    });
+
+    // Perform DFS on the DAG
+    let visited = new Set();
+    let stack = [];
+    for (let node in graph) {
+      if (!visited.has(node)) {
+        dfs(node, visited, stack, graph);
+      }
+    }
+
+    // Return the topological order
+    return stack.reverse();
+  }
+
+  function dfs(node, visited, stack, graph) {
+    visited.add(node);
+    for (let neighbor of graph[node]) {
+      if (!visited.has(neighbor)) {
+        dfs(neighbor, visited, stack, graph);
+      }
+    }
+    stack.push(node);
+  }
+
+  function simLogic() {
+    // Store temporary state arrays
+    let updatedArrows = [...arrows];
+    let updatedCircuit = [...circuit];
+
+    let topoOrder = topologicalSort(circuit, arrows);
+    console.log(topoOrder);
+
+    for (let i = 0; i < topoOrder.length; i++) {
+      let item = updatedCircuit.find((item) => item.id === topoOrder[i]);
+      console.log(item);
+      // Process logic for inputs
+
+      if (item.type === "INPUT") {
+        let outputArrows = updatedArrows.filter(
+          (arrow) => arrow.start === item.id + "-output0"
+        );
+        console.log("INPUT_OUTPUSTS");
+        console.log(outputArrows);
+
+        for (let j = 0; j < outputArrows.length; j++) {
+          for (let k = 0; k < updatedArrows.length; k++) {
+            if (
+              updatedArrows[k].start === outputArrows[j].start ||
+              updatedArrows[k].end === outputArrows[j].end
+            ) {
+              updatedArrows[k].active = item.outputHigh;
+            }
+          }
+        }
+      }
+      // Process logic for AND
+
+      if (item.type === "AND") {
+        let inputArrows0 = updatedArrows.some(
+          (arrow) => arrow.end === item.id + "-input0" && arrow.active === true
+        );
+        let inputArrows1 = updatedArrows.some(
+          (arrow) => arrow.end === item.id + "-input1" && arrow.active === true
+        );
+        let outputArrows = updatedArrows.filter(
+          (arrow) => arrow.start === item.id + "-output0"
+        );
+
+        for (let j = 0; j < outputArrows.length; j++) {
+          for (let k = 0; k < updatedArrows.length; k++) {
+            if (
+              updatedArrows[k].start === outputArrows[j].start ||
+              updatedArrows[k].end === outputArrows[j].end
+            ) {
+              updatedArrows[k].active = inputArrows0 && inputArrows1;
+            }
+          }
+        }
+      }
+
+      // Process logic for NOT
+      if (item.type === "NOT") {
+        let inputArrows = updatedArrows.filter(
+          (arrow) => arrow.end === item.id + "-input0" && arrow.active === true
+        );
+        let outputArrows = updatedArrows.filter(
+          (arrow) => arrow.start === item.id + "-output0"
+        );
+
+        const isActive = inputArrows.length > 0;
+
+        for (let j = 0; j < outputArrows.length; j++) {
+          for (let k = 0; k < updatedArrows.length; k++) {
+            if (updatedArrows[k].start === outputArrows[j].start) {
+              updatedArrows[k].active = !(isActive && item.outputHigh);
+            }
+          }
+        }
+      }
+
+      // Process logic for LEDs
+
+      if (item.type === "LED") {
+        let inputArrows = updatedArrows.filter(
+          (arrow) => arrow.end === item.id + "-input0" && arrow.active === true
+        );
+
+        if (inputArrows.length > 0) {
+          updatedCircuit = updatedCircuit.map((comp) =>
+            comp.id === item.id ? { ...comp, outputHigh: true } : { ...comp }
+          );
+        } else if (inputArrows.length === 0) {
+          updatedCircuit = updatedCircuit.map((comp) =>
+            comp.id === item.id ? { ...comp, outputHigh: false } : { ...comp }
+          );
+        }
+      }
+    }
+    setArrows(updatedArrows);
+    setCircuit(updatedCircuit);
+  }
+
+  const switchInput = (id: string) => {
+    const foundItem = circuit.find((item) => item.id === id);
+
+    switch (foundItem.src) {
+      case "/src/assets/gates/sof.png":
+        setCircuit(
+          circuit.map((item) =>
+            item.id === foundItem.id
+              ? { ...item, src: ImageList[7].src, outputHigh: true }
+              : { ...item }
+          )
+        );
+
         break;
       case "/src/assets/gates/son.png":
         setCircuit(
-          circuit.map((item, ind) =>
-            ind === index
-              ? { ...item, src: "/src/assets/gates/sof.png", outputHigh: false }
+          circuit.map((item) =>
+            item.id === foundItem.id
+              ? { ...item, src: ImageList[1].src, outputHigh: false }
               : { ...item }
           )
         );
@@ -336,22 +512,24 @@ const Play = () => {
 
   const CircuitComponent = ({ id }) => {
     const updateXarrow = useXarrow();
-    let index = 0;
-    for (let i = 0; i < circuit.length; i++) {
-      if (circuit[i].id === id) {
-        index = i;
-      }
+
+    const foundItem = circuit.find((item) => item.id === id);
+
+    let imgSrc = foundItem.src;
+    if (foundItem.type === "LED" && foundItem.outputHigh) {
+      imgSrc = ImageList[6].src;
     }
+
     return (
       <img
         id={id}
         className="compo"
-        src={circuit[index].src}
+        src={imgSrc}
         style={{
           position: "fixed",
           width: "100px",
-          left: circuit[index].x - 50,
-          top: circuit[index].y - 25,
+          left: foundItem.x - 50,
+          top: foundItem.y - 25,
           cursor: "move",
           zIndex: 5,
         }}
@@ -364,9 +542,9 @@ const Play = () => {
           }, 500);
         }}
         onClick={
-          circuit[index].type === "INPUT"
+          foundItem.type === "INPUT"
             ? () => {
-                switchInput(index);
+                switchInput(foundItem.id);
               }
             : null
         }
@@ -374,33 +552,11 @@ const Play = () => {
     );
   };
 
-  const simLogic = () => {
-    const inputItemList = circuit.filter((item) => item.type === "INPUT");
-    console.log(inputItemList);
-    let updatedArrows = [...arrows];
-    for (let i = 0; i < inputItemList.length; i++) {
-      if (inputItemList[i].outputHigh === true) {
-        updatedArrows = updatedArrows.map((arrow) =>
-          arrow.start.slice(0, 36) === inputItemList[i].id ||
-          arrow.end.slice(0, 36) === inputItemList[i].id
-            ? { ...arrow, active: true }
-            : { ...arrow }
-        );
-        console.log("here");
-      } else {
-        updatedArrows = updatedArrows.map((arrow) =>
-          arrow.start.slice(0, 36) === inputItemList[i].id ||
-          arrow.end.slice(0, 36) === inputItemList[i].id
-            ? { ...arrow, active: false }
-            : { ...arrow }
-        );
-      }
-    }
-    setArrows(updatedArrows);
-  };
-
   const arrowStates = () => {
+    console.log("arrows");
     console.log(arrows);
+    console.log("circuit");
+    console.log(circuit);
   };
 
   return (
@@ -422,7 +578,11 @@ const Play = () => {
           >
             Pause
           </button>
-          <button type="button" className="btn btn-success" onClick={simLogic}>
+          <button
+            type="button"
+            className="btn btn-success"
+            onClick={() => simLogic()}
+          >
             Run
           </button>
         </Buttons>
@@ -486,7 +646,7 @@ const Play = () => {
       <PlayArea id="playArea" onDragOver={allowDrop} onDrop={dropHandler}>
         <Xwrapper>
           {circuit.map((item, index) => (
-            <div id={item.id}>
+            <div id={item.id} key={item.id}>
               <CircuitComponent id={item.id} key={item.id} />
               {setupNodes(item.type, item.id, [item.x, item.y])}
             </div>
@@ -499,11 +659,11 @@ const Play = () => {
               path="grid"
               start={ar.start}
               end={ar.end}
-              color={ar.active === true ? "#25A07F" : "#444853"}
+              color={ar.active ? "#25A07F" : "#444853"}
               //startAnchor={ar.start.slice(1, 3) === "ou" ? "right" : "left"}
               //endAnchor={ar.end.slice(1, 3) === "ou" ? "left" : "right"}
-              key={ar.start + "-." + ar.end}
-              zIndex={1}
+              //key={ar.key}
+              zIndex={ar.active ? 2 : 1}
             />
           ))}
         </Xwrapper>
