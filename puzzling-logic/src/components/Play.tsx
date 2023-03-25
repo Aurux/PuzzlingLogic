@@ -155,9 +155,19 @@ const Play = () => {
   const [circuit, setCircuit] = useState<any[]>([]);
   const [arrows, setArrows] = useState<any[]>([]);
   const [start, setStart] = useState<string>("");
-  const [compIndex, setCompIndex] = useState<number>(0);
   const [toolDrag, setToolDrag] = useState<boolean>(false);
   const [draggedID, setDraggedID] = useState<any>("");
+  const [running, setRunning] = useState<boolean>(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (running) {
+        console.log("EFFECT USED");
+        simLogic();
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [running]);
 
   // Triggered when drag starts
   const dragStartHandler = (
@@ -583,12 +593,14 @@ const Play = () => {
         }}
         onDrag={() => {
           setDraggedID(id);
+          updateXarrow;
         }}
         onDragEnd={() => {
           setTimeout(() => {
             updateXarrow();
           }, 500);
         }}
+        onStop={updateXarrow}
         onClick={
           foundItem.type === "INPUT"
             ? () => {
@@ -622,14 +634,14 @@ const Play = () => {
           <button
             type="button"
             className="btn btn-warning"
-            onClick={arrowStates}
+            onClick={() => setRunning(false)}
           >
             Pause
           </button>
           <button
             type="button"
             className="btn btn-success"
-            onClick={() => simLogic()}
+            onClick={() => setRunning(true)}
           >
             Run
           </button>
