@@ -221,7 +221,7 @@ const Play = () => {
     event.preventDefault();
 
     const data = event.dataTransfer.getData("text");
-    let newData = data.slice(-25);
+
     if (event.currentTarget.id === "playArea") {
       const yPos = event.clientY;
       const xPos = event.clientX;
@@ -266,7 +266,7 @@ const Play = () => {
           {
             id: uuidv4(),
             type: type,
-            src: newData,
+            src: data,
             x: xPos,
             y: yPos,
             addedToPlayArea: true,
@@ -395,7 +395,7 @@ const Play = () => {
     // Perform DFS on the DAG
     let visited: Set<Object> = new Set();
     let stack: any[] = [];
-    console.log(graph);
+
     for (let node in graph) {
       if (!visited.has(node)) {
         dfs(node, visited, stack, graph);
@@ -724,14 +724,6 @@ const Play = () => {
     );
   };
 
-  const arrowStates = () => {
-    // For testing purposes
-    console.log("arrows");
-    console.log(arrows);
-    console.log("circuit");
-    console.log(circuit);
-  };
-
   return (
     <Wrapper>
       <Toolbox id="toolbox">
@@ -787,7 +779,7 @@ const Play = () => {
       <PlayArea id="playArea" onDragOver={allowDrop} onDrop={dropHandler}>
         <Xwrapper>
           {circuit.map((item, index) => (
-            <div id={item.id} key={item.id}>
+            <div id={item.id} key={item.id + "div"}>
               <CircuitComponent id={item.id} key={item.id} />
               {setupNodes(item.type, item.id, [item.x, item.y])}
             </div>
