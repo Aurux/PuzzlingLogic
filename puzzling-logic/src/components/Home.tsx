@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
+import ChipGif from "/src/assets/chip.gif";
+import ChipStill from "/src/assets/chip.png";
+
 // Style
 const Wrapper = styled.section`
   padding 2em;
@@ -57,13 +60,7 @@ const Home = ({ onChangeContent }: Props) => {
   };
   return (
     <Wrapper>
-      <Image
-        src={
-          currentState === true
-            ? "/src/assets/chip.gif"
-            : "/src/assets/chip.png"
-        }
-      />
+      <Image src={currentState === true ? ChipGif : ChipStill} />
       {currentState === false ? (
         <Info>
           <Title>

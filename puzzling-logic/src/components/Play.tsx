@@ -3,6 +3,19 @@ import styled from "styled-components";
 import Xarrow, { Xwrapper, useXarrow } from "react-xarrows";
 import { v4 as uuidv4 } from "uuid";
 
+import InvertedChip from "/src/assets/chip2.png";
+import LEDOff from "/src/assets/gates/lof.png";
+import SwitchOff from "/src/assets/gates/sof.png";
+import ANDGate from "/src/assets/gates/and.png";
+import NOTGate from "/src/assets/gates/not.png";
+import ORGate from "/src/assets/gates/orr.png";
+import XORGate from "/src/assets/gates/xor.png";
+import LEDOn from "/src/assets/gates/lon.png";
+import SwitchOn from "/src/assets/gates/son.png";
+import NANDGate from "/src/assets/gates/nan.png";
+import NORGate from "/src/assets/gates/nor.png";
+import XNORGate from "/src/assets/gates/xno.png";
+
 // Style
 const Wrapper = styled.section`
 padding 4em 0.5em 0.5em 0.5em;
@@ -97,47 +110,47 @@ const Node = styled.button`
 const ImageList = [
   {
     name: "Output",
-    src: "/src/assets/gates/lof.png",
+    src: LEDOff,
   },
   {
     name: "Input",
-    src: "/src/assets/gates/sof.png",
+    src: SwitchOff,
   },
   {
     name: "AND gate",
-    src: "/src/assets/gates/and.png",
+    src: ANDGate,
   },
   {
     name: "NOT gate",
-    src: "/src/assets/gates/not.png",
+    src: NOTGate,
   },
   {
     name: "OR gate",
-    src: "/src/assets/gates/orr.png",
+    src: ORGate,
   },
   {
     name: "XOR gate",
-    src: "/src/assets/gates/xor.png",
+    src: XORGate,
   },
   {
     name: "LED-ON",
-    src: "/src/assets/gates/lon.png",
+    src: LEDOn,
   },
   {
     name: "INPUT-ON",
-    src: "/src/assets/gates/son.png",
+    src: SwitchOn,
   },
   {
     name: "NAND gate",
-    src: "/src/assets/gates/nan.png",
+    src: NANDGate,
   },
   {
     name: "NOR gate",
-    src: "/src/assets/gates/nor.png",
+    src: NORGate,
   },
   {
     name: "XNOR gate",
-    src: "/src/assets/gates/xno.png",
+    src: XNORGate,
   },
 ];
 
@@ -722,7 +735,7 @@ const Play = () => {
   return (
     <Wrapper>
       <Toolbox id="toolbox">
-        <img src="/src/assets/chip2.png" />
+        <img src={InvertedChip} />
         <Buttons
           className="btn-group"
           role="group"
