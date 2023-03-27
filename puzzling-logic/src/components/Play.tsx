@@ -96,36 +96,48 @@ const Node = styled.button`
 // Image List
 const ImageList = [
   {
-    id: 0,
+    name: "Output",
     src: "/src/assets/gates/lof.png",
   },
   {
-    id: 1,
+    name: "Input",
     src: "/src/assets/gates/sof.png",
   },
   {
-    id: 2,
+    name: "AND gate",
     src: "/src/assets/gates/and.png",
   },
   {
-    id: 3,
+    name: "NOT gate",
     src: "/src/assets/gates/not.png",
   },
   {
-    id: 4,
+    name: "OR gate",
     src: "/src/assets/gates/orr.png",
   },
   {
-    id: 5,
+    name: "XOR gate",
     src: "/src/assets/gates/xor.png",
   },
   {
-    id: 6,
+    name: "LED-ON",
     src: "/src/assets/gates/lon.png",
   },
   {
-    id: 7,
+    name: "INPUT-ON",
     src: "/src/assets/gates/son.png",
+  },
+  {
+    name: "NAND gate",
+    src: "/src/assets/gates/nan.png",
+  },
+  {
+    name: "NOR gate",
+    src: "/src/assets/gates/nor.png",
+  },
+  {
+    name: "XNOR gate",
+    src: "/src/assets/gates/xno.png",
   },
 ];
 
@@ -137,12 +149,27 @@ const nodeOffset = [
     outputs: { y1: -14, x1: 42 },
   },
   {
+    type: "NAND",
+    inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
+    outputs: { y1: -14, x1: 42 },
+  },
+  {
     type: "OR",
     inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
     outputs: { y1: -14, x1: 42 },
   },
   {
+    type: "NOR",
+    inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
+    outputs: { y1: -14, x1: 42 },
+  },
+  {
     type: "XOR",
+    inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
+    outputs: { y1: -14, x1: 42 },
+  },
+  {
+    type: "XNOR",
     inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
     outputs: { y1: -14, x1: 42 },
   },
@@ -162,10 +189,9 @@ const Play = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       if (running) {
-        console.log("EFFECT USED");
         simLogic();
       }
-    }, 1000);
+    }, 500);
     return () => clearInterval(timer);
   }, [running]);
 
@@ -195,6 +221,12 @@ const Play = () => {
       }
       if (type === "ORR") {
         type = "OR";
+      }
+      if (type === "NAN") {
+        type = "NAND";
+      }
+      if (type === "XNO") {
+        type = "XNOR";
       }
 
       const existingItemIndex = circuit.findIndex(
@@ -240,10 +272,10 @@ const Play = () => {
   };
 
   // Reset play area
-  const resetPlay = () => {
+  function resetPlay() {
     setCircuit((previous) => []);
     setArrows((previous) => []);
-  };
+  }
 
   const handleNodeStart = (event) => {
     setStart(event.currentTarget.id);
@@ -265,8 +297,7 @@ const Play = () => {
       (item) =>
         !(item.start === event.target.id || item.end === event.target.id)
     );
-    console.log(arrowsToKeep);
-    console.log(event.target.id);
+
     setArrows(arrowsToKeep);
   };
 
@@ -362,7 +393,7 @@ const Play = () => {
   };
 
   function topologicalSort(circuit, arrows) {
-    // Create an adjacency list to represent the DAG
+    // Create an adjacency list to represent the DAG (directed acyclic graph)
     let graph = {};
     circuit.forEach((item) => {
       graph[item.id] = [];
@@ -385,6 +416,7 @@ const Play = () => {
   }
 
   function dfs(node, visited, stack, graph) {
+    // Depth first search algorithm
     visited.add(node);
     for (let neighbor of graph[node]) {
       if (!visited.has(neighbor)) {
@@ -400,19 +432,16 @@ const Play = () => {
     let updatedCircuit = [...circuit];
 
     let topoOrder = topologicalSort(circuit, arrows);
-    console.log(topoOrder);
 
     for (let i = 0; i < topoOrder.length; i++) {
       let item = updatedCircuit.find((item) => item.id === topoOrder[i]);
-      console.log(item);
+
       // Process logic for inputs
 
       if (item.type === "INPUT") {
         let outputArrows = updatedArrows.filter(
           (arrow) => arrow.start === item.id + "-output0"
         );
-        console.log("INPUT_OUTPUSTS");
-        console.log(outputArrows);
 
         for (let j = 0; j < outputArrows.length; j++) {
           for (let k = 0; k < updatedArrows.length; k++) {
@@ -426,7 +455,6 @@ const Play = () => {
         }
       }
       // Process logic for AND
-
       if (item.type === "AND") {
         let inputArrows0 = updatedArrows.some(
           (arrow) => arrow.end === item.id + "-input0" && arrow.active === true
@@ -445,6 +473,30 @@ const Play = () => {
               updatedArrows[k].end === outputArrows[j].end
             ) {
               updatedArrows[k].active = inputArrows0 && inputArrows1;
+            }
+          }
+        }
+      }
+
+      // Process logic for NAND
+      if (item.type === "NAND") {
+        let inputArrows0 = updatedArrows.some(
+          (arrow) => arrow.end === item.id + "-input0" && arrow.active === true
+        );
+        let inputArrows1 = updatedArrows.some(
+          (arrow) => arrow.end === item.id + "-input1" && arrow.active === true
+        );
+        let outputArrows = updatedArrows.filter(
+          (arrow) => arrow.start === item.id + "-output0"
+        );
+
+        for (let j = 0; j < outputArrows.length; j++) {
+          for (let k = 0; k < updatedArrows.length; k++) {
+            if (
+              updatedArrows[k].start === outputArrows[j].start ||
+              updatedArrows[k].end === outputArrows[j].end
+            ) {
+              updatedArrows[k].active = !(inputArrows0 && inputArrows1);
             }
           }
         }
@@ -494,6 +546,30 @@ const Play = () => {
         }
       }
 
+      // Process logic for NOR
+      if (item.type === "NOR") {
+        let inputArrows0 = updatedArrows.some(
+          (arrow) => arrow.end === item.id + "-input0" && arrow.active === true
+        );
+        let inputArrows1 = updatedArrows.some(
+          (arrow) => arrow.end === item.id + "-input1" && arrow.active === true
+        );
+        let outputArrows = updatedArrows.filter(
+          (arrow) => arrow.start === item.id + "-output0"
+        );
+
+        for (let j = 0; j < outputArrows.length; j++) {
+          for (let k = 0; k < updatedArrows.length; k++) {
+            if (
+              updatedArrows[k].start === outputArrows[j].start ||
+              updatedArrows[k].end === outputArrows[j].end
+            ) {
+              updatedArrows[k].active = !(inputArrows0 || inputArrows1);
+            }
+          }
+        }
+      }
+
       // Process logic for XOR
       if (item.type === "XOR") {
         let inputArrows0 = updatedArrows.some(
@@ -513,6 +589,30 @@ const Play = () => {
               updatedArrows[k].end === outputArrows[j].end
             ) {
               updatedArrows[k].active = inputArrows0 != inputArrows1;
+            }
+          }
+        }
+      }
+
+      // Process logic for XNOR
+      if (item.type === "XNOR") {
+        let inputArrows0 = updatedArrows.some(
+          (arrow) => arrow.end === item.id + "-input0" && arrow.active === true
+        );
+        let inputArrows1 = updatedArrows.some(
+          (arrow) => arrow.end === item.id + "-input1" && arrow.active === true
+        );
+        let outputArrows = updatedArrows.filter(
+          (arrow) => arrow.start === item.id + "-output0"
+        );
+
+        for (let j = 0; j < outputArrows.length; j++) {
+          for (let k = 0; k < updatedArrows.length; k++) {
+            if (
+              updatedArrows[k].start === outputArrows[j].start ||
+              updatedArrows[k].end === outputArrows[j].end
+            ) {
+              updatedArrows[k].active = !(inputArrows0 != inputArrows1);
             }
           }
         }
@@ -604,7 +704,18 @@ const Play = () => {
         onClick={
           foundItem.type === "INPUT"
             ? () => {
-                switchInput(foundItem.id);
+                if (running) {
+                  setTimeout(() => {
+                    () => setRunning(false);
+                  }, 500);
+
+                  switchInput(foundItem.id);
+                  setTimeout(() => {
+                    () => setRunning(true);
+                  }, 500);
+                } else {
+                  switchInput(foundItem.id);
+                }
               }
             : null
         }
@@ -613,6 +724,7 @@ const Play = () => {
   };
 
   const arrowStates = () => {
+    // For testing purposes
     console.log("arrows");
     console.log(arrows);
     console.log("circuit");
@@ -628,7 +740,14 @@ const Play = () => {
           role="group"
           aria-label="Basic mixed styles example"
         >
-          <button type="button" className="btn btn-danger" onClick={resetPlay}>
+          <button
+            type="button"
+            className="btn btn-danger"
+            onClick={() => {
+              setRunning(false);
+              resetPlay();
+            }}
+          >
             Reset
           </button>
           <button
@@ -643,64 +762,25 @@ const Play = () => {
             className="btn btn-success"
             onClick={() => setRunning(true)}
           >
-            Run
+            {running ? "Running" : "Run"}
           </button>
         </Buttons>
         <Scrollable className="list-group">
-          <ListItem className="list-group-item">
-            <LeftItem>LED&emsp;&emsp;</LeftItem>
-            <RightItem>
-              <GateIcon
-                src={ImageList[0].src}
-                onDragStart={() => setToolDrag(true)}
-              />
-            </RightItem>
-          </ListItem>
-          <ListItem className="list-group-item">
-            <LeftItem>Input&emsp;&emsp;</LeftItem>
-            <RightItem>
-              <GateIcon
-                src={ImageList[1].src}
-                onDragStart={() => setToolDrag(true)}
-              />
-            </RightItem>
-          </ListItem>
-          <ListItem className="list-group-item">
-            <LeftItem>AND gate&emsp;&emsp;</LeftItem>
-            <RightItem>
-              <GateIcon
-                src={ImageList[2].src}
-                onDragStart={() => setToolDrag(true)}
-              />
-            </RightItem>
-          </ListItem>
-          <ListItem className="list-group-item">
-            <LeftItem>NOT gate&emsp;&emsp;</LeftItem>
-            <RightItem>
-              <GateIcon
-                src={ImageList[3].src}
-                onDragStart={() => setToolDrag(true)}
-              />
-            </RightItem>
-          </ListItem>
-          <ListItem className="list-group-item">
-            <LeftItem>OR gate&emsp;&emsp;</LeftItem>
-            <RightItem>
-              <GateIcon
-                src={ImageList[4].src}
-                onDragStart={() => setToolDrag(true)}
-              />
-            </RightItem>
-          </ListItem>
-          <ListItem className="list-group-item">
-            <LeftItem>XOR gate&emsp;&emsp;</LeftItem>
-            <RightItem>
-              <GateIcon
-                src={ImageList[5].src}
-                onDragStart={() => setToolDrag(true)}
-              />
-            </RightItem>
-          </ListItem>
+          {ImageList.map((item) => {
+            if (item.name !== "INPUT-ON" && item.name !== "LED-ON") {
+              return (
+                <ListItem className="list-group-item">
+                  <LeftItem>{item.name}&emsp;&emsp;</LeftItem>
+                  <RightItem>
+                    <GateIcon
+                      src={item.src}
+                      onDragStart={() => setToolDrag(true)}
+                    />
+                  </RightItem>
+                </ListItem>
+              );
+            }
+          })}
         </Scrollable>
       </Toolbox>
       <PlayArea id="playArea" onDragOver={allowDrop} onDrop={dropHandler}>
@@ -717,11 +797,12 @@ const Play = () => {
               showTail={false}
               animateDrawing={true}
               path="grid"
+              gridBreak="20%-20%"
               start={ar.start}
               end={ar.end}
               color={ar.active ? "#25A07F" : "#444853"}
-              //startAnchor={ar.start.slice(1, 3) === "ou" ? "right" : "left"}
-              //endAnchor={ar.end.slice(1, 3) === "ou" ? "left" : "right"}
+              startAnchor={"bottom"}
+              endAnchor={"top"}
               //key={ar.key}
               zIndex={ar.active ? 2 : 1}
             />
