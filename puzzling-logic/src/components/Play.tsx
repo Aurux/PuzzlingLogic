@@ -277,25 +277,29 @@ const Play = () => {
     setArrows((previous) => []);
   }
 
-  const handleNodeStart = (event) => {
-    setStart(event.currentTarget.id);
+  const handleNodeStart = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const target = event.target as HTMLElement;
+    setStart(target.id);
   };
 
-  const handleNodeEnd = (event) => {
-    if (start !== event.target.id) {
+  const handleNodeEnd = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const target = event.target as HTMLElement;
+    if (start !== target.id) {
       setArrows((previous) => [
         ...previous,
-        { start: start, end: event.target.id, active: false, key: uuidv4() },
+        { start: start, end: target.id, active: false, key: uuidv4() },
       ]);
     }
 
     setStart((previous) => "");
   };
 
-  const handleClearConnections = (event) => {
+  const handleClearConnections = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    const target = event.target as HTMLElement;
     const arrowsToKeep = arrows.filter(
-      (item) =>
-        !(item.start === event.target.id || item.end === event.target.id)
+      (item) => !(item.start === target.id || item.end === target.id)
     );
 
     setArrows(arrowsToKeep);
@@ -318,15 +322,15 @@ const Play = () => {
           style={{
             position: "fixed",
 
-            left: itemPos[0] + nodeOffset[index].inputs.x1,
-            top: itemPos[1] + nodeOffset[index].inputs.y1,
+            left: itemPos[0] + nodeOffset[index].inputs!.x1,
+            top: itemPos[1] + nodeOffset[index].inputs!.y1,
           }}
           onDoubleClick={handleClearConnections}
         >
           B
         </Node>
       );
-      if (typeof nodeOffset[index].inputs.y2 !== "undefined") {
+      if (typeof nodeOffset[index].inputs!.y2 !== "undefined") {
         returnArr.push(
           <Node
             id={componentInd.toString() + "-input1"}
@@ -334,8 +338,8 @@ const Play = () => {
             style={{
               position: "fixed",
 
-              left: itemPos[0] + nodeOffset[index].inputs.x2,
-              top: itemPos[1] + nodeOffset[index].inputs.y2,
+              left: itemPos[0] + nodeOffset[index].inputs!.x2!,
+              top: itemPos[1] + nodeOffset[index].inputs!.y2!,
             }}
             onDoubleClick={handleClearConnections}
           >
@@ -352,8 +356,8 @@ const Play = () => {
           style={{
             position: "fixed",
 
-            left: itemPos[0] + nodeOffset[index].outputs.x1,
-            top: itemPos[1] + nodeOffset[index].outputs.y1,
+            left: itemPos[0] + nodeOffset[index].outputs!.x1,
+            top: itemPos[1] + nodeOffset[index].outputs!.y1,
           }}
           onDoubleClick={handleClearConnections}
         >
@@ -364,37 +368,10 @@ const Play = () => {
 
     return returnArr;
   }
-  const switchOutput = (id: string, state: boolean) => {
-    const foundItem = circuit.find((item) => item.id === id);
 
-    switch (state) {
-      case true:
-        setCircuit(
-          circuit.map((item) =>
-            item.id === foundItem.id
-              ? { ...item, outputHigh: true }
-              : { ...item }
-          )
-        );
-
-        break;
-      case false:
-        setCircuit(
-          circuit.map((item) =>
-            item.id === foundItem.id
-              ? { ...item, outputHigh: false }
-              : { ...item }
-          )
-        );
-        break;
-      default:
-        break;
-    }
-  };
-
-  function topologicalSort(circuit, arrows) {
+  function topologicalSort(circuit: any[], arrows: any[]) {
     // Create an adjacency list to represent the DAG (directed acyclic graph)
-    let graph = {};
+    let graph: { [key: string]: any } = {};
     circuit.forEach((item) => {
       graph[item.id] = [];
     });
@@ -403,8 +380,9 @@ const Play = () => {
     });
 
     // Perform DFS on the DAG
-    let visited = new Set();
-    let stack = [];
+    let visited: Set<Object> = new Set();
+    let stack: any[] = [];
+    console.log(graph);
     for (let node in graph) {
       if (!visited.has(node)) {
         dfs(node, visited, stack, graph);
@@ -415,7 +393,12 @@ const Play = () => {
     return stack.reverse();
   }
 
-  function dfs(node, visited, stack, graph) {
+  function dfs(
+    node: string,
+    visited: Set<Object>,
+    stack: any[],
+    graph: { [key: string]: any }
+  ) {
     // Depth first search algorithm
     visited.add(node);
     for (let neighbor of graph[node]) {
@@ -643,8 +626,8 @@ const Play = () => {
   const switchInput = (id: string) => {
     const foundItem = circuit.find((item) => item.id === id);
 
-    switch (foundItem.src) {
-      case "/src/assets/gates/sof.png":
+    switch (foundItem.outputHigh) {
+      case false:
         setCircuit(
           circuit.map((item) =>
             item.id === foundItem.id
@@ -654,7 +637,7 @@ const Play = () => {
         );
 
         break;
-      case "/src/assets/gates/son.png":
+      case true:
         setCircuit(
           circuit.map((item) =>
             item.id === foundItem.id
@@ -668,7 +651,13 @@ const Play = () => {
     }
   };
 
-  const CircuitComponent = ({ id }) => {
+  interface CircuitComponentProps {
+    id: string;
+  }
+
+  const CircuitComponent: React.FunctionComponent<CircuitComponentProps> = ({
+    id,
+  }) => {
     const updateXarrow = useXarrow();
 
     const foundItem = circuit.find((item) => item.id === id);
@@ -677,6 +666,21 @@ const Play = () => {
     if (foundItem.type === "LED" && foundItem.outputHigh) {
       imgSrc = ImageList[6].src;
     }
+
+    const inputSwap = (id: string) => {
+      if (running) {
+        setTimeout(() => {
+          () => setRunning(false);
+        }, 500);
+
+        switchInput(foundItem.id);
+        setTimeout(() => {
+          () => setRunning(true);
+        }, 500);
+      } else {
+        switchInput(foundItem.id);
+      }
+    };
 
     return (
       <img
@@ -700,24 +704,8 @@ const Play = () => {
             updateXarrow();
           }, 500);
         }}
-        onStop={updateXarrow}
         onClick={
-          foundItem.type === "INPUT"
-            ? () => {
-                if (running) {
-                  setTimeout(() => {
-                    () => setRunning(false);
-                  }, 500);
-
-                  switchInput(foundItem.id);
-                  setTimeout(() => {
-                    () => setRunning(true);
-                  }, 500);
-                } else {
-                  switchInput(foundItem.id);
-                }
-              }
-            : null
+          foundItem.type === "INPUT" ? () => inputSwap(foundItem.id) : () => {}
         }
       />
     );
