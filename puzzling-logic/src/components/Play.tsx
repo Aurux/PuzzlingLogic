@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Xarrow, { Xwrapper, useXarrow } from "react-xarrows";
 import { v4 as uuidv4 } from "uuid";
 
+// Multimedia imports
 import InvertedChip from "/src/assets/chip2.png";
 import LEDOff from "/src/assets/gates/lof.png";
 import SwitchOff from "/src/assets/gates/sof.png";
@@ -15,6 +16,11 @@ import SwitchOn from "/src/assets/gates/son.png";
 import NANDGate from "/src/assets/gates/nan.png";
 import NORGate from "/src/assets/gates/nor.png";
 import XNORGate from "/src/assets/gates/xno.png";
+
+import resetVid from "/src/assets/helpVideos/reset.webm";
+import linkVid from "/src/assets/helpVideos/makeLink.webm";
+import addMoveVid from "/src/assets/helpVideos/addRemoveMoveComp.webm";
+import inputVid from "/src/assets/helpVideos/toggleInputs.webm";
 
 // Style
 const Wrapper = styled.section`
@@ -29,13 +35,15 @@ margin: 0 auto;
 `;
 
 const PlayArea = styled.div`
-  display: block;
+  display: flex;
   position: relative;
   float: right;
   width: 80%;
   border: solid #444853;
   border-radius: 0 10px 10px 0;
-  background: white;
+  background: #b3b3b3;
+  justify-content: center;
+  align-items: center;
 `;
 
 const Toolbox = styled.div`
@@ -55,6 +63,15 @@ const Buttons = styled.div`
   flex-direction: row;
 `;
 
+const InfoPill = styled.span`
+  zindex: 50;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: larger;
+`;
+
 const GateIcon = styled.img`
   width: 80%;
 `;
@@ -63,6 +80,7 @@ const ListItem = styled.li`
   display: flex;
   justify-content: center;
   align-items: center;
+  background: #b3b3b3;
 `;
 
 const LeftItem = styled.div`
@@ -104,6 +122,38 @@ const Node = styled.button`
   display: inline-block;
   cursor: crosshair;
   z-index: 10;
+`;
+
+const HelpButton = styled.button`
+  position: absolute;
+  right: 0;
+  bottom: 0;
+`;
+
+const HelpDiv = styled.div`
+  background: #444853;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  float: right;
+  width: 100%;
+  border: solid #444853;
+  border-radius: 0 10px 10px 0;
+  justify-content: center;
+  align-items: center;
+  color: white;
+`;
+
+const HelpTableData = styled.td`
+  text-align: center;
+  display: flex;
+`;
+
+const ToolBoxImgDiv = styled.div`
+  position: relative;
+
+  justify-content: center;
+  align-items: center;
 `;
 
 // Image List
@@ -198,6 +248,7 @@ const Play = () => {
   const [toolDrag, setToolDrag] = useState<boolean>(false);
   const [draggedID, setDraggedID] = useState<any>("");
   const [running, setRunning] = useState<boolean>(false);
+  const [isHelpHidden, setIsHelpHidden] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -338,7 +389,7 @@ const Play = () => {
             left: itemPos[0] + nodeOffset[index].inputs!.x1,
             top: itemPos[1] + nodeOffset[index].inputs!.y1,
           }}
-          onDoubleClick={handleClearConnections}
+          onAuxClick={handleClearConnections}
         >
           B
         </Node>
@@ -354,7 +405,7 @@ const Play = () => {
               left: itemPos[0] + nodeOffset[index].inputs!.x2!,
               top: itemPos[1] + nodeOffset[index].inputs!.y2!,
             }}
-            onDoubleClick={handleClearConnections}
+            onAuxClick={handleClearConnections}
           >
             B
           </Node>
@@ -372,7 +423,7 @@ const Play = () => {
             left: itemPos[0] + nodeOffset[index].outputs!.x1,
             top: itemPos[1] + nodeOffset[index].outputs!.y1,
           }}
-          onDoubleClick={handleClearConnections}
+          onAuxClick={handleClearConnections}
         >
           B
         </Node>
@@ -668,6 +719,22 @@ const Play = () => {
     id: string;
   }
 
+  const handleDeleteComponent = (event: React.MouseEvent<HTMLImageElement>) => {
+    const target = event.target as HTMLElement;
+
+    const arrowsToKeep = arrows.filter(
+      (item) =>
+        !(
+          item.start.slice(0, 36) === target.id ||
+          item.end.slice(0, 36) === target.id
+        )
+    );
+    const circuitToKeep = circuit.filter((item) => !(item.id === target.id));
+
+    setArrows(arrowsToKeep);
+    setCircuit(circuitToKeep);
+  };
+
   const CircuitComponent: React.FunctionComponent<CircuitComponentProps> = ({
     id,
   }) => {
@@ -720,14 +787,30 @@ const Play = () => {
         onClick={
           foundItem.type === "INPUT" ? () => inputSwap(foundItem.id) : () => {}
         }
+        onAuxClick={handleDeleteComponent}
       />
     );
+  };
+
+  const handleHideHelp = () => {
+    setIsHelpHidden(!isHelpHidden);
   };
 
   return (
     <Wrapper>
       <Toolbox id="toolbox">
-        <img src={InvertedChip} />
+        <ToolBoxImgDiv>
+          <img src={InvertedChip} width={"100%"} height={"100%"} />
+          <InfoPill
+            className={
+              running
+                ? "badge badge-pill badge-warning"
+                : "badge badge-pill badge-info"
+            }
+          >
+            {running ? "Running" : "Stopped"}
+          </InfoPill>
+        </ToolBoxImgDiv>
         <Buttons
           className="btn-group"
           role="group"
@@ -743,19 +826,13 @@ const Play = () => {
           >
             Reset
           </button>
+
           <button
             type="button"
-            className="btn btn-warning"
-            onClick={() => setRunning(false)}
+            className={running ? "btn btn-warning" : "btn btn-success"}
+            onClick={() => setRunning(!running)}
           >
-            Pause
-          </button>
-          <button
-            type="button"
-            className="btn btn-success"
-            onClick={() => setRunning(true)}
-          >
-            {running ? "Running" : "Run"}
+            {running ? "Pause" : "Run"}
           </button>
         </Buttons>
         <Scrollable className="list-group">
@@ -776,32 +853,97 @@ const Play = () => {
           })}
         </Scrollable>
       </Toolbox>
-      <PlayArea id="playArea" onDragOver={allowDrop} onDrop={dropHandler}>
-        <Xwrapper>
-          {circuit.map((item, index) => (
-            <div id={item.id} key={item.id + "div"}>
-              <CircuitComponent id={item.id} key={item.id} />
-              {setupNodes(item.type, item.id, [item.x, item.y])}
-            </div>
-          ))}
-          {arrows.map((ar) => (
-            <Xarrow
-              showHead={false}
-              showTail={false}
-              animateDrawing={true}
-              path="grid"
-              gridBreak="20%-20%"
-              start={ar.start}
-              end={ar.end}
-              color={ar.active ? "#25A07F" : "#444853"}
-              startAnchor={"bottom"}
-              endAnchor={"top"}
-              //key={ar.key}
-              zIndex={ar.active ? 2 : 1}
-            />
-          ))}
-        </Xwrapper>
-      </PlayArea>
+      {isHelpHidden && (
+        <PlayArea id="playArea" onDragOver={allowDrop} onDrop={dropHandler}>
+          <Xwrapper>
+            {circuit.map((item, index) => (
+              <div id={item.id} key={item.id + "div"}>
+                <CircuitComponent id={item.id} key={item.id} />
+                {setupNodes(item.type, item.id, [item.x, item.y])}
+              </div>
+            ))}
+            {arrows.map((ar) => (
+              <Xarrow
+                showHead={false}
+                showTail={false}
+                animateDrawing={true}
+                path="grid"
+                gridBreak="20%-20%"
+                start={ar.start}
+                end={ar.end}
+                color={ar.active ? "#25A07F" : "#444853"}
+                startAnchor={"bottom"}
+                endAnchor={"top"}
+                //key={ar.key}
+                zIndex={ar.active ? 2 : 1}
+              />
+            ))}
+          </Xwrapper>
+
+          <HelpButton
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={handleHideHelp}
+          >
+            Help
+          </HelpButton>
+        </PlayArea>
+      )}
+      {!isHelpHidden && (
+        <HelpDiv>
+          <h1>Video tutorials</h1>
+          <br />
+          <table>
+            <tr>
+              <HelpTableData>
+                <b>Adding, removing & repositioning components.</b> <br />
+                Drag items with left click, remove with middle click.
+                <br />
+                <video width="500" controls muted>
+                  <source src={addMoveVid} type="video/webm" />
+                  Your browser does not support the video tag.
+                </video>
+              </HelpTableData>
+              <HelpTableData>
+                <b>Linking components.</b>
+                <br /> Drag from an output node to an input node.
+                <br />
+                <video width="500" controls muted>
+                  <source src={linkVid} type="video/webm" />
+                  Your browser does not support the video tag.
+                </video>
+              </HelpTableData>
+            </tr>
+            <tr>
+              <HelpTableData>
+                <b>Toggling input components & running the circuit</b>
+                <br /> Left click the component.
+                <br />
+                <video width="500" controls muted>
+                  <source src={inputVid} type="video/webm" />
+                  Your browser does not support the video tag.
+                </video>
+              </HelpTableData>
+              <HelpTableData>
+                <b>Resetting the circuit</b>
+                <br />
+                <br />
+                <video width="500" controls muted>
+                  <source src={resetVid} type="video/webm" />
+                  Your browser does not support the video tag.
+                </video>
+              </HelpTableData>
+            </tr>
+          </table>
+          <HelpButton
+            type="button"
+            className="btn btn-outline-danger"
+            onClick={handleHideHelp}
+          >
+            Close
+          </HelpButton>
+        </HelpDiv>
+      )}
     </Wrapper>
   );
 };
