@@ -72,6 +72,15 @@ const InfoPill = styled.span`
   font-size: larger;
 `;
 
+const LogoIcon = styled.img`
+  width: 90%;
+  height: 90%;
+
+  top: 50%;
+  left: 50%;
+  transform: translate(5%, 5%);
+`;
+
 const GateIcon = styled.img`
   width: 80%;
 `;
@@ -81,6 +90,7 @@ const ListItem = styled.li`
   justify-content: center;
   align-items: center;
   background: #b3b3b3;
+  position: relative;
 `;
 
 const LeftItem = styled.div`
@@ -110,6 +120,11 @@ const RightItem = styled.div`
 const Scrollable = styled.ul`
   max-height: 60%;
   overflow: auto;
+  -webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 `;
 
 const Node = styled.button`
@@ -136,7 +151,7 @@ const HelpDiv = styled.div`
   flex-direction: column;
   position: relative;
   float: right;
-  width: 100%;
+  width: 80%;
   border: solid #444853;
   border-radius: 0 10px 10px 0;
   justify-content: center;
@@ -146,7 +161,6 @@ const HelpDiv = styled.div`
 
 const HelpTableData = styled.td`
   text-align: center;
-  display: flex;
 `;
 
 const ToolBoxImgDiv = styled.div`
@@ -154,6 +168,41 @@ const ToolBoxImgDiv = styled.div`
 
   justify-content: center;
   align-items: center;
+  height: 40%;
+`;
+
+const TooltipDiv = styled.div`
+  position: relative;
+
+  justify-content: center;
+  align-items: center;
+
+  height: 40%;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+const TooltipTable = styled.table`
+  width: 100%;
+  table-layout: fixed;
+  background-color: rgba(255, 255, 255, 0.3);
+`;
+
+const TooltipTableHead = styled.th`
+  text-align: center;
+  font-weight: 500;
+  color: #fff;
+  text-transform: uppercase;
+`;
+
+const TooltipTableData = styled.td`
+  text-align: center;
+  font-weight: 300;
+  color: #fff;
+  border-bottom: solid 1px rgba(255, 255, 255, 0.1);
 `;
 
 // Image List
@@ -249,6 +298,7 @@ const Play = () => {
   const [draggedID, setDraggedID] = useState<any>("");
   const [running, setRunning] = useState<boolean>(false);
   const [isHelpHidden, setIsHelpHidden] = useState(true);
+  const [tooltipShow, setTooltipShow] = useState<string>("");
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -796,21 +846,294 @@ const Play = () => {
     setIsHelpHidden(!isHelpHidden);
   };
 
+  const handleMouseEnter = (item: string) => {
+    setTooltipShow(item);
+  };
+
+  const handleMouseLeave = () => {
+    setTooltipShow("");
+  };
+
+  const ComponentTooltip = () => {
+    if (tooltipShow == "Output") {
+      return (
+        <TooltipDiv>
+          <h2>Ouptut LED</h2>
+          Lights up when receiving a signal.
+        </TooltipDiv>
+      );
+    }
+    if (tooltipShow == "Input") {
+      return (
+        <TooltipDiv>
+          <h2>Input Switch</h2>
+          Outputs a signal when turned on.
+        </TooltipDiv>
+      );
+    }
+    if (tooltipShow == "AND gate") {
+      return (
+        <TooltipDiv>
+          <h2>{tooltipShow}</h2>
+          Only outputs when both inputs are high.
+          <br />
+          <TooltipTable>
+            <thead>
+              <TooltipTableHead>Input A</TooltipTableHead>
+              <TooltipTableHead>Input B</TooltipTableHead>
+              <TooltipTableHead>Output</TooltipTableHead>
+            </thead>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+          </TooltipTable>
+        </TooltipDiv>
+      );
+    }
+    if (tooltipShow == "NOT gate") {
+      return (
+        <TooltipDiv>
+          <h2>{tooltipShow}</h2>
+          Outputs the opposite of the input.
+          <br />
+          <TooltipTable>
+            <thead>
+              <TooltipTableHead>Input </TooltipTableHead>
+
+              <TooltipTableHead>Output</TooltipTableHead>
+            </thead>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+          </TooltipTable>
+        </TooltipDiv>
+      );
+    }
+    if (tooltipShow == "OR gate") {
+      return (
+        <TooltipDiv>
+          <h2>{tooltipShow}</h2>
+          Outputs a signal when either inputs are high.
+          <br />
+          <TooltipTable>
+            <thead>
+              <TooltipTableHead>Input A</TooltipTableHead>
+              <TooltipTableHead>Input B</TooltipTableHead>
+              <TooltipTableHead>Output</TooltipTableHead>
+            </thead>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+          </TooltipTable>
+        </TooltipDiv>
+      );
+    }
+    if (tooltipShow == "XOR gate") {
+      return (
+        <TooltipDiv>
+          <h2>{tooltipShow}</h2>
+          Outputs a signal when only 1 of the inputs is high.
+          <br />
+          <TooltipTable>
+            <thead>
+              <TooltipTableHead>Input A</TooltipTableHead>
+              <TooltipTableHead>Input B</TooltipTableHead>
+              <TooltipTableHead>Output</TooltipTableHead>
+            </thead>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+          </TooltipTable>
+        </TooltipDiv>
+      );
+    }
+    if (tooltipShow == "NAND gate") {
+      return (
+        <TooltipDiv>
+          <h2>{tooltipShow}</h2>
+          Outputs a signal unless both outputs are high.
+          <br />
+          <TooltipTable>
+            <thead>
+              <TooltipTableHead>Input A</TooltipTableHead>
+              <TooltipTableHead>Input B</TooltipTableHead>
+              <TooltipTableHead>Output</TooltipTableHead>
+            </thead>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+          </TooltipTable>
+        </TooltipDiv>
+      );
+    }
+    if (tooltipShow == "NOR gate") {
+      return (
+        <TooltipDiv>
+          <h2>{tooltipShow}</h2>
+          Outputs a signal only when both outputs are low.
+          <br />
+          <TooltipTable>
+            <thead>
+              <TooltipTableHead>Input A</TooltipTableHead>
+              <TooltipTableHead>Input B</TooltipTableHead>
+              <TooltipTableHead>Output</TooltipTableHead>
+            </thead>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+          </TooltipTable>
+        </TooltipDiv>
+      );
+    }
+    if (tooltipShow == "XNOR gate") {
+      return (
+        <TooltipDiv>
+          <h2>{tooltipShow}</h2>
+          Outputs a signal when both inputs are high or both inputs are low.
+          <br />
+          <TooltipTable>
+            <thead>
+              <TooltipTableHead>Input A</TooltipTableHead>
+              <TooltipTableHead>Input B</TooltipTableHead>
+              <TooltipTableHead>Output</TooltipTableHead>
+            </thead>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+              <TooltipTableData>0</TooltipTableData>
+            </tr>
+            <tr>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+              <TooltipTableData>1</TooltipTableData>
+            </tr>
+          </TooltipTable>
+        </TooltipDiv>
+      );
+    } else {
+      return null;
+    }
+  };
+
   return (
     <Wrapper>
-      <Toolbox id="toolbox">
-        <ToolBoxImgDiv>
-          <img src={InvertedChip} width={"100%"} height={"100%"} />
-          <InfoPill
-            className={
-              running
-                ? "badge badge-pill badge-warning"
-                : "badge badge-pill badge-info"
-            }
-          >
-            {running ? "Running" : "Stopped"}
-          </InfoPill>
-        </ToolBoxImgDiv>
+      <Toolbox>
+        {tooltipShow !== "" ? (
+          <ComponentTooltip />
+        ) : (
+          <ToolBoxImgDiv>
+            <LogoIcon src={InvertedChip} />
+            <InfoPill
+              className={
+                running
+                  ? "badge badge-pill badge-warning"
+                  : "badge badge-pill badge-info"
+              }
+            >
+              {running ? "Running" : "Stopped"}
+            </InfoPill>
+          </ToolBoxImgDiv>
+        )}
         <Buttons
           className="btn-group"
           role="group"
@@ -836,10 +1159,14 @@ const Play = () => {
           </button>
         </Buttons>
         <Scrollable className="list-group">
-          {ImageList.map((item) => {
+          {ImageList.map((item, index) => {
             if (item.name !== "INPUT-ON" && item.name !== "LED-ON") {
               return (
-                <ListItem className="list-group-item">
+                <ListItem
+                  className="list-group-item"
+                  onMouseEnter={() => handleMouseEnter(item.name)}
+                  onMouseLeave={() => handleMouseLeave()}
+                >
                   <LeftItem>{item.name}&emsp;&emsp;</LeftItem>
                   <RightItem>
                     <GateIcon
@@ -891,7 +1218,7 @@ const Play = () => {
       )}
       {!isHelpHidden && (
         <HelpDiv>
-          <h1>Video tutorials</h1>
+          <h1>Video Tutorials</h1>
           <br />
           <table>
             <tr>
@@ -916,7 +1243,7 @@ const Play = () => {
             </tr>
             <tr>
               <HelpTableData>
-                <b>Toggling input components & running the circuit</b>
+                <b>Toggling input components & running the circuit.</b>
                 <br /> Left click the component.
                 <br />
                 <video width="500" controls muted>
@@ -925,7 +1252,7 @@ const Play = () => {
                 </video>
               </HelpTableData>
               <HelpTableData>
-                <b>Resetting the circuit</b>
+                <b>Resetting the circuit.</b>
                 <br />
                 <br />
                 <video width="500" controls muted>
