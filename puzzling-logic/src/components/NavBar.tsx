@@ -1,9 +1,20 @@
+import styled from "styled-components";
+import GithubLogo from "/src/assets/github.svg";
+
 interface Props {
   onChangeContent: (page: string) => void;
 }
 
+const Logo = styled.img`
+  user-drag: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+`;
+
 const NavBar = ({ onChangeContent }: Props) => {
-  const items = ["Home", "Play", "About"];
   return (
     <nav className="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
       <div className="container-fluid">
@@ -57,6 +68,20 @@ const NavBar = ({ onChangeContent }: Props) => {
             </li>
           </ul>
         </div>
+
+        <a
+          className="navbar-brand"
+          href="https://github.com/Aurux/PuzzlingLogic"
+        >
+          <Logo
+            src={GithubLogo}
+            alt="Logo"
+            width="30"
+            height="24"
+            className="d-inline-block align-text-top"
+          />
+          View on Github
+        </a>
       </div>
     </nav>
   );

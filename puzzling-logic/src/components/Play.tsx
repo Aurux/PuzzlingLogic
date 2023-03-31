@@ -169,6 +169,12 @@ const ToolBoxImgDiv = styled.div`
   justify-content: center;
   align-items: center;
   height: 40%;
+  user-drag: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 `;
 
 const TooltipDiv = styled.div`
@@ -322,60 +328,61 @@ const Play = () => {
     event.preventDefault();
 
     const data = event.dataTransfer.getData("text");
+    if (data.includes("gates/")) {
+      if (event.currentTarget.id === "playArea") {
+        const yPos = event.clientY;
+        const xPos = event.clientX;
+        let type = data.slice(-7, -4).toUpperCase();
+        if (type === "LOF" || type === "LON") {
+          type = "LED";
+        }
+        if (type === "SOF" || type === "SON") {
+          type = "INPUT";
+        }
+        if (type === "ORR") {
+          type = "OR";
+        }
+        if (type === "NAN") {
+          type = "NAND";
+        }
+        if (type === "XNO") {
+          type = "XNOR";
+        }
 
-    if (event.currentTarget.id === "playArea") {
-      const yPos = event.clientY;
-      const xPos = event.clientX;
-      let type = data.slice(-7, -4).toUpperCase();
-      if (type === "LOF" || type === "LON") {
-        type = "LED";
-      }
-      if (type === "SOF" || type === "SON") {
-        type = "INPUT";
-      }
-      if (type === "ORR") {
-        type = "OR";
-      }
-      if (type === "NAN") {
-        type = "NAND";
-      }
-      if (type === "XNO") {
-        type = "XNOR";
-      }
-
-      const existingItemIndex = circuit.findIndex(
-        (item) =>
-          item.type === type && item.addedToPlayArea && item.id === draggedID
-      );
-
-      // If it exists and has been added to the playArea before, update its x and y values
-      if (existingItemIndex !== -1 && toolDrag === false) {
-        setCircuit((previous) =>
-          previous.map((item, index) => {
-            if (index === existingItemIndex) {
-              return { ...item, x: xPos, y: yPos };
-            }
-            return item;
-          })
+        const existingItemIndex = circuit.findIndex(
+          (item) =>
+            item.type === type && item.addedToPlayArea && item.id === draggedID
         );
-      } else {
-        // If it doesn't exist or hasn't been added to the playArea before,
-        // create a new item with a new UUID and set addedToPlayArea to true
-        let output = type === "NOT" ? true : false;
-        setCircuit((previous) => [
-          ...previous,
-          {
-            id: uuidv4(),
-            type: type,
-            src: data,
-            x: xPos,
-            y: yPos,
-            addedToPlayArea: true,
-            outputHigh: output,
-          },
-        ]);
-        setToolDrag(false);
-        setDraggedID("");
+
+        // If it exists and has been added to the playArea before, update its x and y values
+        if (existingItemIndex !== -1 && toolDrag === false) {
+          setCircuit((previous) =>
+            previous.map((item, index) => {
+              if (index === existingItemIndex) {
+                return { ...item, x: xPos, y: yPos };
+              }
+              return item;
+            })
+          );
+        } else {
+          // If it doesn't exist or hasn't been added to the playArea before,
+          // create a new item with a new UUID and set addedToPlayArea to true
+          let output = type === "NOT" ? true : false;
+          setCircuit((previous) => [
+            ...previous,
+            {
+              id: uuidv4(),
+              type: type,
+              src: data,
+              x: xPos,
+              y: yPos,
+              addedToPlayArea: true,
+              outputHigh: output,
+            },
+          ]);
+          setToolDrag(false);
+          setDraggedID("");
+        }
       }
     }
   };
