@@ -846,33 +846,64 @@ const Play: React.FC<Props> = (props) => {
       }
     };
 
+    const labelXOffset =
+      foundItem.type === "INPUT"
+        ? foundItem.x - 65 - foundItem.label?.length * 8.5
+        : foundItem.x + 60;
+
+    let labelVisible =
+      foundItem.type === "INPUT" || foundItem.type === "LED" ? true : false;
+
+    labelVisible = foundItem.label?.length > 0 ? true : false;
+
     return (
-      <img
-        id={id}
-        className="compo"
-        src={imgSrc}
-        style={{
-          position: "fixed",
-          width: "100px",
-          left: foundItem.x - 50,
-          top: foundItem.y - 25,
-          cursor: "move",
-          zIndex: 5,
-        }}
-        onDrag={() => {
-          setDraggedID(id);
-          updateXarrow;
-        }}
-        onDragEnd={() => {
-          setTimeout(() => {
-            updateXarrow();
-          }, 500);
-        }}
-        onClick={
-          foundItem.type === "INPUT" ? () => inputSwap(foundItem.id) : () => {}
-        }
-        onAuxClick={handleDeleteComponent}
-      />
+      <>
+        <img
+          id={id}
+          className="compo"
+          src={imgSrc}
+          style={{
+            position: "fixed",
+            width: "100px",
+            left: foundItem.x - 50,
+            top: foundItem.y - 25,
+            cursor: "move",
+            zIndex: 5,
+          }}
+          onDrag={() => {
+            setDraggedID(id);
+            updateXarrow;
+          }}
+          onDragEnd={() => {
+            setTimeout(() => {
+              updateXarrow();
+            }, 500);
+          }}
+          onClick={
+            foundItem.type === "INPUT"
+              ? () => inputSwap(foundItem.id)
+              : () => {}
+          }
+          onAuxClick={handleDeleteComponent}
+        />
+        {labelVisible ? (
+          <div
+            style={{
+              position: "fixed",
+              left: labelXOffset,
+              top: foundItem.y - 14,
+              fontWeight: "bold",
+              fontSize: "larger",
+              textAlign: "right",
+              border: "2px solid black",
+              borderRadius: "5px",
+              padding: "2px",
+              background: "white",
+            }}
+            dangerouslySetInnerHTML={{ __html: foundItem.label }}
+          ></div>
+        ) : null}
+      </>
     );
   };
 
@@ -1149,11 +1180,6 @@ const Play: React.FC<Props> = (props) => {
     }
   };
 
-  const handlePrint = () => {
-    console.log(circuit);
-    console.log(arrows);
-  };
-
   return (
     <Wrapper>
       <Toolbox>
@@ -1236,14 +1262,15 @@ const Play: React.FC<Props> = (props) => {
                 showTail={false}
                 animateDrawing={true}
                 path="grid"
-                gridBreak="20%-20%"
+                gridBreak="20%20"
                 start={ar.start}
                 end={ar.end}
                 color={ar.active ? "#25A07F" : "#444853"}
-                startAnchor={"bottom"}
-                endAnchor={"top"}
+                startAnchor="bottom"
+                endAnchor="top"
                 //key={ar.key}
                 zIndex={ar.active ? 2 : 1}
+                SVGcanvasStyle={{ margin: 20 }}
               />
             ))}
           </Xwrapper>
@@ -1251,7 +1278,7 @@ const Play: React.FC<Props> = (props) => {
           <HelpButton
             type="button"
             className="btn btn-outline-secondary"
-            onClick={handlePrint}
+            onClick={handleHideHelp}
           >
             Help
           </HelpButton>

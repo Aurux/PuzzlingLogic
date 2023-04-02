@@ -53,6 +53,7 @@ const NavBar = ({ onChangeContent }: Props) => {
                 className="nav-link"
                 href="#Play"
                 onClick={() => onChangeContent("Play")}
+                title="Play in the circuit sandbox"
               >
                 Play
               </a>
@@ -62,6 +63,7 @@ const NavBar = ({ onChangeContent }: Props) => {
                 className="nav-link"
                 href="#Examples"
                 onClick={() => onChangeContent("Examples")}
+                title="View example circuits"
               >
                 Examples
               </a>
@@ -72,6 +74,7 @@ const NavBar = ({ onChangeContent }: Props) => {
         <a
           className="navbar-brand"
           href="https://github.com/Aurux/PuzzlingLogic"
+          target="_blank"
         >
           <Logo
             src={GithubLogo}
