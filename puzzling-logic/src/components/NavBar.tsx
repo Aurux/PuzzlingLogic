@@ -60,10 +60,10 @@ const NavBar = ({ onChangeContent }: Props) => {
             <li className="nav-item">
               <a
                 className="nav-link"
-                href="#About"
-                onClick={() => onChangeContent("About")}
+                href="#Examples"
+                onClick={() => onChangeContent("Examples")}
               >
-                About
+                Examples
               </a>
             </li>
           </ul>
@@ -79,6 +79,7 @@ const NavBar = ({ onChangeContent }: Props) => {
             width="30"
             height="24"
             className="d-inline-block align-text-top"
+            title="View source code!"
           />
           View on Github
         </a>

@@ -3,6 +3,8 @@ import styled from "styled-components";
 import Xarrow, { Xwrapper, useXarrow } from "react-xarrows";
 import { v4 as uuidv4 } from "uuid";
 
+import { CircuitItem, ArrowItem } from "./Examples";
+
 // Multimedia imports
 import InvertedChip from "/src/assets/chip2.png";
 import LEDOff from "/src/assets/gates/lof.png";
@@ -295,7 +297,13 @@ const nodeOffset = [
   { type: "INPUT", outputs: { y1: -10, x1: 45 } },
 ];
 
-const Play = () => {
+interface Props {
+  circuit?: CircuitItem[];
+  arrows?: ArrowItem[];
+  onMount: () => void;
+}
+
+const Play: React.FC<Props> = (props) => {
   // Get states of various things
   const [circuit, setCircuit] = useState<any[]>([]);
   const [arrows, setArrows] = useState<any[]>([]);
@@ -305,6 +313,15 @@ const Play = () => {
   const [running, setRunning] = useState<boolean>(false);
   const [isHelpHidden, setIsHelpHidden] = useState(true);
   const [tooltipShow, setTooltipShow] = useState<string>("");
+
+  // Set circuit from example if props are set.
+  useEffect(() => {
+    if (props.circuit !== undefined && props.arrows !== undefined) {
+      setCircuit(props.circuit);
+      setArrows(props.arrows);
+      props.onMount();
+    }
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -326,62 +343,65 @@ const Play = () => {
   // Triggered when dropping
   const dropHandler = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
+    if (!running) {
+      const data = event.dataTransfer.getData("text");
+      if (data.includes("gates/")) {
+        if (event.currentTarget.id === "playArea") {
+          const yPos = event.clientY;
+          const xPos = event.clientX;
+          let type = data.slice(-7, -4).toUpperCase();
+          if (type === "LOF" || type === "LON") {
+            type = "LED";
+          }
+          if (type === "SOF" || type === "SON") {
+            type = "INPUT";
+          }
+          if (type === "ORR") {
+            type = "OR";
+          }
+          if (type === "NAN") {
+            type = "NAND";
+          }
+          if (type === "XNO") {
+            type = "XNOR";
+          }
 
-    const data = event.dataTransfer.getData("text");
-    if (data.includes("gates/")) {
-      if (event.currentTarget.id === "playArea") {
-        const yPos = event.clientY;
-        const xPos = event.clientX;
-        let type = data.slice(-7, -4).toUpperCase();
-        if (type === "LOF" || type === "LON") {
-          type = "LED";
-        }
-        if (type === "SOF" || type === "SON") {
-          type = "INPUT";
-        }
-        if (type === "ORR") {
-          type = "OR";
-        }
-        if (type === "NAN") {
-          type = "NAND";
-        }
-        if (type === "XNO") {
-          type = "XNOR";
-        }
-
-        const existingItemIndex = circuit.findIndex(
-          (item) =>
-            item.type === type && item.addedToPlayArea && item.id === draggedID
-        );
-
-        // If it exists and has been added to the playArea before, update its x and y values
-        if (existingItemIndex !== -1 && toolDrag === false) {
-          setCircuit((previous) =>
-            previous.map((item, index) => {
-              if (index === existingItemIndex) {
-                return { ...item, x: xPos, y: yPos };
-              }
-              return item;
-            })
+          const existingItemIndex = circuit.findIndex(
+            (item) =>
+              item.type === type &&
+              item.addedToPlayArea &&
+              item.id === draggedID
           );
-        } else {
-          // If it doesn't exist or hasn't been added to the playArea before,
-          // create a new item with a new UUID and set addedToPlayArea to true
-          let output = type === "NOT" ? true : false;
-          setCircuit((previous) => [
-            ...previous,
-            {
-              id: uuidv4(),
-              type: type,
-              src: data,
-              x: xPos,
-              y: yPos,
-              addedToPlayArea: true,
-              outputHigh: output,
-            },
-          ]);
-          setToolDrag(false);
-          setDraggedID("");
+
+          // If it exists and has been added to the playArea before, update its x and y values
+          if (existingItemIndex !== -1 && toolDrag === false) {
+            setCircuit((previous) =>
+              previous.map((item, index) => {
+                if (index === existingItemIndex) {
+                  return { ...item, x: xPos, y: yPos };
+                }
+                return item;
+              })
+            );
+          } else {
+            // If it doesn't exist or hasn't been added to the playArea before,
+            // create a new item with a new UUID and set addedToPlayArea to true
+            let output = type === "NOT" ? true : false;
+            setCircuit((previous) => [
+              ...previous,
+              {
+                id: uuidv4(),
+                type: type,
+                src: data,
+                x: xPos,
+                y: yPos,
+                addedToPlayArea: true,
+                outputHigh: output,
+              },
+            ]);
+            setToolDrag(false);
+            setDraggedID("");
+          }
         }
       }
     }
@@ -404,26 +424,30 @@ const Play = () => {
   };
 
   const handleNodeEnd = (event: React.MouseEvent<HTMLButtonElement>) => {
-    const target = event.target as HTMLElement;
-    if (start !== target.id) {
-      setArrows((previous) => [
-        ...previous,
-        { start: start, end: target.id, active: false, key: uuidv4() },
-      ]);
-    }
+    if (!running) {
+      const target = event.target as HTMLElement;
+      if (start !== target.id) {
+        setArrows((previous) => [
+          ...previous,
+          { start: start, end: target.id, active: false, key: uuidv4() },
+        ]);
+      }
 
-    setStart((previous) => "");
+      setStart((previous) => "");
+    }
   };
 
   const handleClearConnections = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
-    const target = event.target as HTMLElement;
-    const arrowsToKeep = arrows.filter(
-      (item) => !(item.start === target.id || item.end === target.id)
-    );
+    if (!running) {
+      const target = event.target as HTMLElement;
+      const arrowsToKeep = arrows.filter(
+        (item) => !(item.start === target.id || item.end === target.id)
+      );
 
-    setArrows(arrowsToKeep);
+      setArrows(arrowsToKeep);
+    }
   };
 
   // Set node buttons
@@ -745,30 +769,32 @@ const Play = () => {
   }
 
   const switchInput = (id: string) => {
-    const foundItem = circuit.find((item) => item.id === id);
+    if (!running) {
+      const foundItem = circuit.find((item) => item.id === id);
 
-    switch (foundItem.outputHigh) {
-      case false:
-        setCircuit(
-          circuit.map((item) =>
-            item.id === foundItem.id
-              ? { ...item, src: ImageList[7].src, outputHigh: true }
-              : { ...item }
-          )
-        );
+      switch (foundItem.outputHigh) {
+        case false:
+          setCircuit(
+            circuit.map((item) =>
+              item.id === foundItem.id
+                ? { ...item, src: ImageList[7].src, outputHigh: true }
+                : { ...item }
+            )
+          );
 
-        break;
-      case true:
-        setCircuit(
-          circuit.map((item) =>
-            item.id === foundItem.id
-              ? { ...item, src: ImageList[1].src, outputHigh: false }
-              : { ...item }
-          )
-        );
-        break;
-      default:
-        break;
+          break;
+        case true:
+          setCircuit(
+            circuit.map((item) =>
+              item.id === foundItem.id
+                ? { ...item, src: ImageList[1].src, outputHigh: false }
+                : { ...item }
+            )
+          );
+          break;
+        default:
+          break;
+      }
     }
   };
 
@@ -778,18 +804,19 @@ const Play = () => {
 
   const handleDeleteComponent = (event: React.MouseEvent<HTMLImageElement>) => {
     const target = event.target as HTMLElement;
+    if (!running) {
+      const arrowsToKeep = arrows.filter(
+        (item) =>
+          !(
+            item.start.slice(0, 36) === target.id ||
+            item.end.slice(0, 36) === target.id
+          )
+      );
+      const circuitToKeep = circuit.filter((item) => !(item.id === target.id));
 
-    const arrowsToKeep = arrows.filter(
-      (item) =>
-        !(
-          item.start.slice(0, 36) === target.id ||
-          item.end.slice(0, 36) === target.id
-        )
-    );
-    const circuitToKeep = circuit.filter((item) => !(item.id === target.id));
-
-    setArrows(arrowsToKeep);
-    setCircuit(circuitToKeep);
+      setArrows(arrowsToKeep);
+      setCircuit(circuitToKeep);
+    }
   };
 
   const CircuitComponent: React.FunctionComponent<CircuitComponentProps> = ({
@@ -1122,6 +1149,11 @@ const Play = () => {
     }
   };
 
+  const handlePrint = () => {
+    console.log(circuit);
+    console.log(arrows);
+  };
+
   return (
     <Wrapper>
       <Toolbox>
@@ -1153,6 +1185,7 @@ const Play = () => {
               setRunning(false);
               resetPlay();
             }}
+            title="Reset all gates and connections."
           >
             Reset
           </button>
@@ -1161,6 +1194,7 @@ const Play = () => {
             type="button"
             className={running ? "btn btn-warning" : "btn btn-success"}
             onClick={() => setRunning(!running)}
+            title={running ? "Pause logic" : "Run logic"}
           >
             {running ? "Pause" : "Run"}
           </button>
@@ -1217,7 +1251,7 @@ const Play = () => {
           <HelpButton
             type="button"
             className="btn btn-outline-secondary"
-            onClick={handleHideHelp}
+            onClick={handlePrint}
           >
             Help
           </HelpButton>
@@ -1231,7 +1265,8 @@ const Play = () => {
             <tr>
               <HelpTableData>
                 <b>Adding, removing & repositioning components.</b> <br />
-                Drag items with left click, remove with middle click.
+                Drag items with left click, remove with middle click. (Circuit
+                must be paused)
                 <br />
                 <video width="500" controls muted>
                   <source src={addMoveVid} type="video/webm" />
@@ -1239,7 +1274,7 @@ const Play = () => {
                 </video>
               </HelpTableData>
               <HelpTableData>
-                <b>Linking components.</b>
+                <b>Linking components. (Circuit must be paused)</b>
                 <br /> Drag from an output node to an input node.
                 <br />
                 <video width="500" controls muted>
@@ -1251,7 +1286,8 @@ const Play = () => {
             <tr>
               <HelpTableData>
                 <b>Toggling input components & running the circuit.</b>
-                <br /> Left click the component.
+                <br /> Left click the component. (Circuit must be paused to
+                toggle inputs)
                 <br />
                 <video width="500" controls muted>
                   <source src={inputVid} type="video/webm" />
@@ -1261,6 +1297,7 @@ const Play = () => {
               <HelpTableData>
                 <b>Resetting the circuit.</b>
                 <br />
+                Clears the entire circuit and stops the circuit running.
                 <br />
                 <video width="500" controls muted>
                   <source src={resetVid} type="video/webm" />
