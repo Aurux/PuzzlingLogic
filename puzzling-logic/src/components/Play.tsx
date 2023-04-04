@@ -310,7 +310,6 @@ const Play: React.FC<Props> = (props) => {
   const [arrows, setArrows] = useState<any[]>([]);
   const [start, setStart] = useState<string>("");
   const [toolDrag, setToolDrag] = useState<boolean>(false);
-  const [draggedID, setDraggedID] = useState<any>("");
   const [running, setRunning] = useState<boolean>(false);
   const [isHelpHidden, setIsHelpHidden] = useState(true);
   const [tooltipShow, setTooltipShow] = useState<string>("");
@@ -337,9 +336,11 @@ const Play: React.FC<Props> = (props) => {
   // Triggered when drag starts
   const dragStartHandler = (
     event: React.DragEvent<HTMLDivElement>,
-    data: string
+    data: string,
+    id: string
   ) => {
     event.dataTransfer.setData("text", data);
+    event.dataTransfer.setData("id", id);
   };
 
   // Triggered when dropping
@@ -347,7 +348,9 @@ const Play: React.FC<Props> = (props) => {
     event.preventDefault();
     if (!running) {
       const data = event.dataTransfer.getData("text");
+      const sentID = event.dataTransfer.getData("id");
       console.log("Item dragged: ", data);
+      console.log("Item dragged: ", sentID);
 
       if (event.currentTarget.id === "playArea") {
         const yPos = event.clientY;
@@ -387,7 +390,7 @@ const Play: React.FC<Props> = (props) => {
 
         const existingItemIndex = circuit.findIndex(
           (item) =>
-            item.type === type && item.addedToPlayArea && item.id === draggedID
+            item.type === type && item.addedToPlayArea && item.id === sentID
         );
 
         if (isGate) {
@@ -418,7 +421,6 @@ const Play: React.FC<Props> = (props) => {
               },
             ]);
             setToolDrag(false);
-            setDraggedID("");
           }
         }
       }
@@ -898,8 +900,10 @@ const Play: React.FC<Props> = (props) => {
             zIndex: 5,
           }}
           onDrag={() => {
-            setDraggedID(id);
             updateXarrow;
+          }}
+          onDragStart={(event) => {
+            dragStartHandler(event, imgSrc, id);
           }}
           onDragEnd={() => {
             setTimeout(() => {
@@ -1270,7 +1274,9 @@ const Play: React.FC<Props> = (props) => {
                   <RightItem>
                     <GateIcon
                       src={item.src}
-                      onDragStart={() => setToolDrag(true)}
+                      onDragStart={(event) =>
+                        dragStartHandler(event, item.src, "")
+                      }
                     />
                   </RightItem>
                 </ListItem>
