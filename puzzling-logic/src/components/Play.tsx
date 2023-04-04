@@ -1292,7 +1292,7 @@ const Play: React.FC<Props> = (props) => {
               <Xarrow
                 showHead={false}
                 showTail={false}
-                animateDrawing={true}
+                //animateDrawing={true}
                 path="grid"
                 gridBreak="20%20"
                 start={ar.start}
