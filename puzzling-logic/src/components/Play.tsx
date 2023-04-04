@@ -261,6 +261,7 @@ const ImageList = [
   },
 ];
 
+// Offset map for connection nodes.
 const nodeOffset = [
   { type: "LED", inputs: { y1: -8.5, x1: -60 } },
   {
@@ -323,6 +324,7 @@ const Play: React.FC<Props> = (props) => {
     }
   }, []);
 
+  // Used to run the circuit simulation constantly when started.
   useEffect(() => {
     const timer = setInterval(() => {
       if (running) {
@@ -434,11 +436,13 @@ const Play: React.FC<Props> = (props) => {
     setArrows((previous) => []);
   }
 
+  // Called when user starts dragging from start node.
   const handleNodeStart = (event: React.MouseEvent<HTMLButtonElement>) => {
     const target = event.target as HTMLElement;
     setStart(target.id);
   };
 
+  // Connects start to end node.
   const handleNodeEnd = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (!running) {
       const target = event.target as HTMLElement;
@@ -453,6 +457,7 @@ const Play: React.FC<Props> = (props) => {
     }
   };
 
+  // Clear all connections from selected node.
   const handleClearConnections = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
@@ -530,6 +535,7 @@ const Play: React.FC<Props> = (props) => {
     return returnArr;
   }
 
+  // Topological sort function for setting the order in which nodes are processed during simulation. This makes sure the signal stays "true" from input to output.
   function topologicalSort(circuit: any[], arrows: any[]) {
     // Create an adjacency list to represent the DAG (directed acyclic graph)
     let graph: { [key: string]: any } = {};
@@ -570,6 +576,7 @@ const Play: React.FC<Props> = (props) => {
     stack.push(node);
   }
 
+  // Simulate logical operations for the circuit.
   function simLogic() {
     // Store temporary state arrays
     let updatedArrows = [...arrows];
@@ -784,6 +791,7 @@ const Play: React.FC<Props> = (props) => {
     setCircuit(updatedCircuit);
   }
 
+  // Toggle output for input components.
   const switchInput = (id: string) => {
     if (!running) {
       const foundItem = circuit.find((item) => item.id === id);
@@ -818,6 +826,7 @@ const Play: React.FC<Props> = (props) => {
     id: string;
   }
 
+  // Delete selected circuit component.
   const handleDeleteComponent = (event: React.MouseEvent<HTMLImageElement>) => {
     const target = event.target as HTMLElement;
     if (!running) {
@@ -835,6 +844,7 @@ const Play: React.FC<Props> = (props) => {
     }
   };
 
+  // Circuit "componenent" component. Also handles arrow updates when components are moved.
   const CircuitComponent: React.FunctionComponent<CircuitComponentProps> = ({
     id,
   }) => {
@@ -862,6 +872,7 @@ const Play: React.FC<Props> = (props) => {
       }
     };
 
+    // Labels for example circuits.
     const labelXOffset =
       foundItem.type === "INPUT"
         ? foundItem.x - 65 - foundItem.label?.length * 8.5
@@ -901,6 +912,8 @@ const Play: React.FC<Props> = (props) => {
               : () => {}
           }
           onAuxClick={handleDeleteComponent}
+          onMouseEnter={() => handleMouseEnter(foundItem.type)}
+          onMouseLeave={handleMouseLeave}
         />
         {labelVisible ? (
           <div
@@ -923,10 +936,12 @@ const Play: React.FC<Props> = (props) => {
     );
   };
 
+  // For hiding and showing the help window.
   const handleHideHelp = () => {
     setIsHelpHidden(!isHelpHidden);
   };
 
+  // Handlers for showing component tooltip on mouseover.
   const handleMouseEnter = (item: string) => {
     setTooltipShow(item);
   };
@@ -935,8 +950,9 @@ const Play: React.FC<Props> = (props) => {
     setTooltipShow("");
   };
 
+  // Tooltip view component.
   const ComponentTooltip = () => {
-    if (tooltipShow == "Output") {
+    if (tooltipShow == "Output" || tooltipShow == "LED") {
       return (
         <TooltipDiv>
           <h2>Ouptut LED</h2>
@@ -944,7 +960,7 @@ const Play: React.FC<Props> = (props) => {
         </TooltipDiv>
       );
     }
-    if (tooltipShow == "Input") {
+    if (tooltipShow == "Input" || tooltipShow == "INPUT") {
       return (
         <TooltipDiv>
           <h2>Input Switch</h2>
@@ -952,7 +968,7 @@ const Play: React.FC<Props> = (props) => {
         </TooltipDiv>
       );
     }
-    if (tooltipShow == "AND gate") {
+    if (tooltipShow == "AND gate" || tooltipShow == "AND") {
       return (
         <TooltipDiv>
           <h2>{tooltipShow}</h2>
@@ -988,7 +1004,7 @@ const Play: React.FC<Props> = (props) => {
         </TooltipDiv>
       );
     }
-    if (tooltipShow == "NOT gate") {
+    if (tooltipShow == "NOT gate" || tooltipShow == "NOT") {
       return (
         <TooltipDiv>
           <h2>{tooltipShow}</h2>
@@ -1012,7 +1028,7 @@ const Play: React.FC<Props> = (props) => {
         </TooltipDiv>
       );
     }
-    if (tooltipShow == "OR gate") {
+    if (tooltipShow == "OR gate" || tooltipShow == "OR") {
       return (
         <TooltipDiv>
           <h2>{tooltipShow}</h2>
@@ -1048,7 +1064,7 @@ const Play: React.FC<Props> = (props) => {
         </TooltipDiv>
       );
     }
-    if (tooltipShow == "XOR gate") {
+    if (tooltipShow == "XOR gate" || tooltipShow == "XOR") {
       return (
         <TooltipDiv>
           <h2>{tooltipShow}</h2>
@@ -1084,7 +1100,7 @@ const Play: React.FC<Props> = (props) => {
         </TooltipDiv>
       );
     }
-    if (tooltipShow == "NAND gate") {
+    if (tooltipShow == "NAND gate" || tooltipShow == "NAND") {
       return (
         <TooltipDiv>
           <h2>{tooltipShow}</h2>
@@ -1120,7 +1136,7 @@ const Play: React.FC<Props> = (props) => {
         </TooltipDiv>
       );
     }
-    if (tooltipShow == "NOR gate") {
+    if (tooltipShow == "NOR gate" || tooltipShow == "NOR") {
       return (
         <TooltipDiv>
           <h2>{tooltipShow}</h2>
@@ -1156,7 +1172,7 @@ const Play: React.FC<Props> = (props) => {
         </TooltipDiv>
       );
     }
-    if (tooltipShow == "XNOR gate") {
+    if (tooltipShow == "XNOR gate" || tooltipShow == "XNOR") {
       return (
         <TooltipDiv>
           <h2>{tooltipShow}</h2>
