@@ -1,11 +1,26 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
-import LEDOn from "/src/assets/gates/lon.png";
+// Circuit images
 import OssImg from "/src/assets/examples/oss.png";
 import SRLatImg from "/src/assets/examples/SRLatch.png";
 import DLatImg from "/src/assets/examples/dlatch.png";
 import AdderImg from "/src/assets/examples/adder.png";
+
+// Gate images
+import InvertedChip from "/src/assets/chip2.png";
+import LEDOff from "/src/assets/gates/lof.png";
+import SwitchOff from "/src/assets/gates/sof.png";
+import ANDGate from "/src/assets/gates/and.png";
+import NOTGate from "/src/assets/gates/not.png";
+import ORGate from "/src/assets/gates/orr.png";
+import XORGate from "/src/assets/gates/xor.png";
+import LEDOn from "/src/assets/gates/lon.png";
+import SwitchOn from "/src/assets/gates/son.png";
+import NANDGate from "/src/assets/gates/nan.png";
+import NORGate from "/src/assets/gates/nor.png";
+import XNORGate from "/src/assets/gates/xno.png";
+
 // Style
 const Wrapper = styled.div`
 padding 4em 0.5em 0.5em 0.5em;
@@ -29,7 +44,7 @@ const OssCirc = [
   {
     id: "5fecb288-2e0d-4e85-acab-848351f54f07",
     type: "NOT",
-    src: "http://localhost:5173/src/assets/gates/not.png",
+    src: NOTGate,
     x: 854,
     y: 404,
     addedToPlayArea: true,
@@ -39,7 +54,7 @@ const OssCirc = [
   {
     id: "ea3e6222-ae9d-4bb2-9c9c-1e288baec430",
     type: "NOT",
-    src: "http://localhost:5173/src/assets/gates/not.png",
+    src: NOTGate,
     x: 1000,
     y: 461,
     addedToPlayArea: true,
@@ -49,7 +64,7 @@ const OssCirc = [
   {
     id: "892fe9ec-bd10-47a2-9f5c-e83dd6ce1b3b",
     type: "NOT",
-    src: "http://localhost:5173/src/assets/gates/not.png",
+    src: NOTGate,
     x: 1127,
     y: 523,
     addedToPlayArea: true,
@@ -59,7 +74,7 @@ const OssCirc = [
   {
     id: "ba4dd108-3183-4780-af4d-a3d46cbea772",
     type: "LED",
-    src: "http://localhost:5173/src/assets/gates/lof.png",
+    src: LEDOff,
     x: 1370,
     y: 531,
     addedToPlayArea: true,
@@ -99,7 +114,7 @@ const SRcirc = [
   {
     id: "7e6a2677-b946-42e8-bb7e-c8b39b5cd436",
     type: "NOR",
-    src: "http://localhost:5173/src/assets/gates/nor.png",
+    src: NORGate,
     x: 962,
     y: 392,
     addedToPlayArea: true,
@@ -108,7 +123,7 @@ const SRcirc = [
   {
     id: "b029396f-82b3-418f-a0be-c823b5beb3fd",
     type: "NOR",
-    src: "http://localhost:5173/src/assets/gates/nor.png",
+    src: NORGate,
     x: 940,
     y: 515,
     addedToPlayArea: true,
@@ -117,7 +132,7 @@ const SRcirc = [
   {
     id: "0993bf4a-2580-487d-bd28-2dfc095a89da",
     type: "LED",
-    src: "http://localhost:5173/src/assets/gates/lof.png",
+    src: LEDOff,
     x: 1199,
     y: 388,
     addedToPlayArea: true,
@@ -127,7 +142,7 @@ const SRcirc = [
   {
     id: "c78954e0-5580-410d-87ea-e0f6b83f7311",
     type: "LED",
-    src: "http://localhost:5173/src/assets/gates/lof.png",
+    src: LEDOff,
     x: 1201,
     y: 510,
     addedToPlayArea: true,
@@ -137,7 +152,7 @@ const SRcirc = [
   {
     id: "b0ab3c36-1398-4c1a-b99c-1422422f9aaa",
     type: "INPUT",
-    src: "http://localhost:5173/src/assets/gates/sof.png",
+    src: SwitchOff,
     x: 738,
     y: 379,
     addedToPlayArea: true,
@@ -147,7 +162,7 @@ const SRcirc = [
   {
     id: "01ef208c-1526-47ec-ac3e-64e23ae5eadb",
     type: "INPUT",
-    src: "http://localhost:5173/src/assets/gates/sof.png",
+    src: SwitchOff,
     x: 741,
     y: 538,
     addedToPlayArea: true,
@@ -199,7 +214,7 @@ const DlatCirc = [
   {
     id: "25086aea-8bec-44f6-84bb-839b34e4aae7",
     type: "NOT",
-    src: "http://localhost:5173/src/assets/gates/not.png",
+    src: NOTGate,
     x: 517,
     y: 384,
     addedToPlayArea: true,
@@ -208,7 +223,7 @@ const DlatCirc = [
   {
     id: "452d81b6-de29-4bac-93e6-8e2674d13c51",
     type: "NOT",
-    src: "http://localhost:5173/src/assets/gates/not.png",
+    src: NOTGate,
     x: 623,
     y: 439,
     addedToPlayArea: true,
@@ -217,7 +232,7 @@ const DlatCirc = [
   {
     id: "961b9d81-f03d-467a-8287-f37dbfc2d72d",
     type: "NOT",
-    src: "http://localhost:5173/src/assets/gates/not.png",
+    src: NOTGate,
     x: 724,
     y: 486,
     addedToPlayArea: true,
@@ -226,7 +241,7 @@ const DlatCirc = [
   {
     id: "8b555d66-5ca5-49fe-8364-50c10fa0fe65",
     type: "INPUT",
-    src: "http://localhost:5173/src/assets/gates/sof.png",
+    src: SwitchOff,
     x: 723,
     y: 597,
     addedToPlayArea: true,
@@ -235,7 +250,7 @@ const DlatCirc = [
   {
     id: "c82696c7-4383-4c19-b1a3-3b9efa186927",
     type: "LED",
-    src: "http://localhost:5173/src/assets/gates/lof.png",
+    src: LEDOff,
     x: 1420,
     y: 424,
     addedToPlayArea: true,
@@ -244,7 +259,7 @@ const DlatCirc = [
   {
     id: "a2faa1f1-4d9c-4189-b148-9e0cb5043514",
     type: "LED",
-    src: "http://localhost:5173/src/assets/gates/lof.png",
+    src: LEDOff,
     x: 1421,
     y: 528,
     addedToPlayArea: true,
@@ -253,7 +268,7 @@ const DlatCirc = [
   {
     id: "03841811-06b2-4c4f-8df1-c3ee1e2ed567",
     type: "NOT",
-    src: "http://localhost:5173/src/assets/gates/not.png",
+    src: NOTGate,
     x: 898,
     y: 410,
     addedToPlayArea: true,
@@ -262,7 +277,7 @@ const DlatCirc = [
   {
     id: "c0abd5c4-9fc3-4346-ae18-35fe36d0dcfa",
     type: "AND",
-    src: "http://localhost:5173/src/assets/gates/and.png",
+    src: ANDGate,
     x: 1030,
     y: 421,
     addedToPlayArea: true,
@@ -271,7 +286,7 @@ const DlatCirc = [
   {
     id: "9ee39945-cd86-444b-a5ca-997faf7f1887",
     type: "AND",
-    src: "http://localhost:5173/src/assets/gates/and.png",
+    src: ANDGate,
     x: 1030,
     y: 546,
     addedToPlayArea: true,
@@ -280,7 +295,7 @@ const DlatCirc = [
   {
     id: "67a08a32-081d-4459-8688-26aaa1ca8b89",
     type: "NOR",
-    src: "http://localhost:5173/src/assets/gates/nor.png",
+    src: NORGate,
     x: 1251,
     y: 432,
     addedToPlayArea: true,
@@ -289,7 +304,7 @@ const DlatCirc = [
   {
     id: "70897b0b-9b39-45f2-83c1-324603817b70",
     type: "NOR",
-    src: "http://localhost:5173/src/assets/gates/nor.png",
+    src: NORGate,
     x: 1203,
     y: 535,
     addedToPlayArea: true,
@@ -388,7 +403,7 @@ const AdderCirc = [
   {
     id: "306eb09e-9215-447b-82c5-2bc6d4378beb",
     type: "AND",
-    src: "http://localhost:5173/src/assets/gates/and.png",
+    src: ANDGate,
     x: 1021,
     y: 463,
     addedToPlayArea: true,
@@ -398,7 +413,7 @@ const AdderCirc = [
   {
     id: "591c8611-7c40-4e1f-b604-9f2682c69aec",
     type: "OR",
-    src: "http://localhost:5173/src/assets/gates/orr.png",
+    src: ORGate,
     x: 1178,
     y: 529,
     addedToPlayArea: true,
@@ -408,7 +423,7 @@ const AdderCirc = [
   {
     id: "1b94cf66-8460-4c79-bebb-b73c02e42789",
     type: "AND",
-    src: "http://localhost:5173/src/assets/gates/and.png",
+    src: ANDGate,
     x: 858,
     y: 573,
     addedToPlayArea: true,
@@ -418,7 +433,7 @@ const AdderCirc = [
   {
     id: "147df010-39b5-405e-8d3c-8bc5adf8152b",
     type: "XOR",
-    src: "http://localhost:5173/src/assets/gates/xor.png",
+    src: XORGate,
     x: 1131,
     y: 343,
     addedToPlayArea: true,
@@ -428,7 +443,7 @@ const AdderCirc = [
   {
     id: "88fb4249-954c-40b8-a77f-9dbfc85df310",
     type: "XOR",
-    src: "http://localhost:5173/src/assets/gates/xor.png",
+    src: XORGate,
     x: 904,
     y: 308,
     addedToPlayArea: true,
@@ -438,7 +453,7 @@ const AdderCirc = [
   {
     id: "6e534714-b8c3-4036-b7c9-3ff5915e81e5",
     type: "INPUT",
-    src: "/src/assets/gates/sof.png",
+    src: SwitchOff,
     x: 576,
     y: 276,
     addedToPlayArea: true,
@@ -448,7 +463,7 @@ const AdderCirc = [
   {
     id: "68046326-4a39-4bf3-bc99-c4d2b79b9ed8",
     type: "INPUT",
-    src: "/src/assets/gates/sof.png",
+    src: SwitchOff,
     x: 564,
     y: 439,
     addedToPlayArea: true,
@@ -458,7 +473,7 @@ const AdderCirc = [
   {
     id: "4eb51f19-bb76-4272-95ea-a89bdeed711f",
     type: "INPUT",
-    src: "/src/assets/gates/sof.png",
+    src: SwitchOff,
     x: 572,
     y: 531,
     addedToPlayArea: true,
@@ -468,7 +483,7 @@ const AdderCirc = [
   {
     id: "225f8e21-f08d-46d6-af79-9f273c2698fd",
     type: "LED",
-    src: "http://localhost:5173/src/assets/gates/lof.png",
+    src: LEDOff,
     x: 1370,
     y: 337,
     addedToPlayArea: true,
@@ -478,7 +493,7 @@ const AdderCirc = [
   {
     id: "dd72de73-3f0b-42b5-9e67-7acda39eedb1",
     type: "LED",
-    src: "http://localhost:5173/src/assets/gates/lof.png",
+    src: LEDOff,
     x: 1393,
     y: 532,
     addedToPlayArea: true,

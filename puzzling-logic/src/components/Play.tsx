@@ -345,34 +345,50 @@ const Play: React.FC<Props> = (props) => {
     event.preventDefault();
     if (!running) {
       const data = event.dataTransfer.getData("text");
-      if (data.includes("gates/")) {
-        if (event.currentTarget.id === "playArea") {
-          const yPos = event.clientY;
-          const xPos = event.clientX;
-          let type = data.slice(-7, -4).toUpperCase();
-          if (type === "LOF" || type === "LON") {
-            type = "LED";
-          }
-          if (type === "SOF" || type === "SON") {
-            type = "INPUT";
-          }
-          if (type === "ORR") {
-            type = "OR";
-          }
-          if (type === "NAN") {
-            type = "NAND";
-          }
-          if (type === "XNO") {
-            type = "XNOR";
-          }
+      console.log("Item dragged: ", data);
 
-          const existingItemIndex = circuit.findIndex(
-            (item) =>
-              item.type === type &&
-              item.addedToPlayArea &&
-              item.id === draggedID
-          );
+      if (event.currentTarget.id === "playArea") {
+        const yPos = event.clientY;
+        const xPos = event.clientX;
+        let type = "";
+        let isGate = true;
+        if (data.includes("lof") || data.includes("lon")) {
+          type = "LED";
+        }
+        if (data.includes("sof") || data.includes("son")) {
+          type = "INPUT";
+        }
+        if (data.includes("orr")) {
+          type = "OR";
+        }
+        if (data.includes("nan")) {
+          type = "NAND";
+        }
+        if (data.includes("xno")) {
+          type = "XNOR";
+        }
+        if (data.includes("xor")) {
+          type = "XOR";
+        }
+        if (data.includes("not")) {
+          type = "NOT";
+        }
+        if (data.includes("and")) {
+          type = "AND";
+        }
+        if (data.includes("nor")) {
+          type = "NOR";
+        }
+        if (data.includes("github") || data.includes("chip")) {
+          isGate = false;
+        }
 
+        const existingItemIndex = circuit.findIndex(
+          (item) =>
+            item.type === type && item.addedToPlayArea && item.id === draggedID
+        );
+
+        if (isGate) {
           // If it exists and has been added to the playArea before, update its x and y values
           if (existingItemIndex !== -1 && toolDrag === false) {
             setCircuit((previous) =>
