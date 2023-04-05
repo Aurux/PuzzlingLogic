@@ -122,7 +122,7 @@ const RightItem = styled.div`
 const Scrollable = styled.ul`
   max-height: 60%;
   overflow: auto;
-  -webkit-scrollbar {
+  body::-webkit-scrollbar {
     display: none;
   }
   -ms-overflow-style: none;
@@ -132,6 +132,7 @@ const Scrollable = styled.ul`
 const Node = styled.button`
   font-size: 10px;
   width: 20px;
+  height: 20px;
   border: solid black;
   border-radius: 50%;
   background: #25a07f;
@@ -263,39 +264,39 @@ const ImageList = [
 
 // Offset map for connection nodes.
 const nodeOffset = [
-  { type: "LED", inputs: { y1: -8.5, x1: -60 } },
+  { type: "LED", inputs: { y1: -10, x1: -60 } },
   {
     type: "AND",
-    inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
-    outputs: { y1: -14, x1: 42 },
+    inputs: { y1: -20, x1: -60, y2: 0, x2: -60 },
+    outputs: { y1: -10, x1: 45 },
   },
   {
     type: "NAND",
-    inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
-    outputs: { y1: -14, x1: 42 },
+    inputs: { y1: -20, x1: -60, y2: 0, x2: -60 },
+    outputs: { y1: -10, x1: 48 },
   },
   {
     type: "OR",
-    inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
-    outputs: { y1: -14, x1: 42 },
+    inputs: { y1: -20, x1: -60, y2: 0, x2: -60 },
+    outputs: { y1: -10, x1: 45 },
   },
   {
     type: "NOR",
-    inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
-    outputs: { y1: -14, x1: 42 },
+    inputs: { y1: -20, x1: -60, y2: 0, x2: -60 },
+    outputs: { y1: -10, x1: 45 },
   },
   {
     type: "XOR",
-    inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
-    outputs: { y1: -14, x1: 42 },
+    inputs: { y1: -20, x1: -60, y2: 0, x2: -60 },
+    outputs: { y1: -10, x1: 45 },
   },
   {
     type: "XNOR",
-    inputs: { y1: -24, x1: -60, y2: -4, x2: -60 },
-    outputs: { y1: -14, x1: 42 },
+    inputs: { y1: -20, x1: -60, y2: 0, x2: -60 },
+    outputs: { y1: -10, x1: 48 },
   },
   { type: "NOT", inputs: { y1: -13, x1: -60 }, outputs: { y1: -13, x1: 42 } },
-  { type: "INPUT", outputs: { y1: -10, x1: 45 } },
+  { type: "INPUT", outputs: { y1: -10, x1: 40 } },
 ];
 
 interface Props {
@@ -449,10 +450,31 @@ const Play: React.FC<Props> = (props) => {
     if (!running) {
       const target = event.target as HTMLElement;
       if (start !== target.id) {
+        const startBtn = document.getElementById(start);
+        const endBtn = document.getElementById(target.id);
+        if (startBtn) {
+          startBtn.style.backgroundColor = "yellow";
+          startBtn.style.color = "yellow";
+        }
+        if (endBtn) {
+          endBtn.style.backgroundColor = "yellow";
+          endBtn.style.color = "yellow";
+        }
+
         setArrows((previous) => [
           ...previous,
           { start: start, end: target.id, active: false, key: uuidv4() },
         ]);
+        setTimeout(() => {
+          if (startBtn) {
+            startBtn.style.backgroundColor = "#25a07f";
+            startBtn.style.color = "#25a07f";
+          }
+          if (endBtn) {
+            endBtn.style.backgroundColor = "#25a07f";
+            endBtn.style.color = "#25a07f";
+          }
+        }, 1000);
       }
 
       setStart((previous) => "");
@@ -463,7 +485,8 @@ const Play: React.FC<Props> = (props) => {
   const handleClearConnections = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
-    if (!running) {
+    event.preventDefault();
+    if (!running && event.button === 1) {
       const target = event.target as HTMLElement;
       const arrowsToKeep = arrows.filter(
         (item) => !(item.start === target.id || item.end === target.id)
@@ -830,8 +853,9 @@ const Play: React.FC<Props> = (props) => {
 
   // Delete selected circuit component.
   const handleDeleteComponent = (event: React.MouseEvent<HTMLImageElement>) => {
+    event.preventDefault();
     const target = event.target as HTMLElement;
-    if (!running) {
+    if (!running && event.button === 1) {
       const arrowsToKeep = arrows.filter(
         (item) =>
           !(
@@ -893,7 +917,7 @@ const Play: React.FC<Props> = (props) => {
           src={imgSrc}
           style={{
             position: "fixed",
-            width: "100px",
+            height: "50px",
             left: foundItem.x - 50,
             top: foundItem.y - 25,
             cursor: "move",
