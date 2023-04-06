@@ -40,7 +40,7 @@ const PlayArea = styled.div`
   display: flex;
   position: relative;
   float: right;
-  width: 80%;
+  width: 85%;
   border: solid #444853;
   border-radius: 0 10px 10px 0;
   background: #b3b3b3;
@@ -53,7 +53,7 @@ const Toolbox = styled.div`
   flex-direction: column;
   justify-content: center;
   float: left;
-  width: 20%;
+  width: 15%;
   border: solid #444853;
   border-radius: 10px 0 0 10px;
   background: #444853;
