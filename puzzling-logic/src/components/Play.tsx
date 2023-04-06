@@ -120,7 +120,7 @@ const RightItem = styled.div`
 `;
 
 const Scrollable = styled.ul`
-  max-height: 60%;
+  max-height: 70%;
   overflow: auto;
   body::-webkit-scrollbar {
     display: none;
@@ -171,7 +171,7 @@ const ToolBoxImgDiv = styled.div`
 
   justify-content: center;
   align-items: center;
-  height: 40%;
+  height: 30%;
   user-drag: none;
   -webkit-user-drag: none;
   user-select: none;
@@ -186,7 +186,7 @@ const TooltipDiv = styled.div`
   justify-content: center;
   align-items: center;
 
-  height: 40%;
+  height: 30%;
   color: white;
   display: flex;
   flex-direction: column;
