@@ -1,6 +1,6 @@
 # PuzzlingLogic
 
-React.js app for building and playing with logic circuits. Follow the link on this page to view the hosted site.
+React app for building and playing with logic circuits. Follow the link on this page to view the hosted site.
 
 ## To run code in dev mode:
 * ```npm i```
