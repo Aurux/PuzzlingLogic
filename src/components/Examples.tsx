@@ -34,6 +34,15 @@ const CardDiv = styled.div`
   width: 18rem;
   height: fit-content;
   margin: 1em;
+
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s;
+
+  &:hover {
+    transform: translateY(-5px); // Move the card up when hovered
+  }
 `;
 
 const LearnLink = styled.a`
@@ -656,10 +665,10 @@ const Examples = ({ importContent }: Props) => {
       <CardDiv className="card">
         <img src={OssImg} className="card-img-top" alt="..." />
         <div className="card-body">
-          <h5 className="card-title">Ring Osscillator</h5>
+          <h5 className="card-title">Ring Oscillator</h5>
           <p className="card-text">
             Using an odd number of NOT gates connected in a looped series
-            produces an osscillating square wave output.
+            produces an oscillating square wave output.
           </p>
           <div
             className="btn-group"
@@ -730,7 +739,7 @@ const Examples = ({ importContent }: Props) => {
           <p className="card-text">
             A D latch is a primitive memory cell that stores data when the clock
             is high. In this example the clock signal is generated using a ring
-            ossilator.
+            oscillator.
           </p>
           <div
             className="btn-group"

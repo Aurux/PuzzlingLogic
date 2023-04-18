@@ -40,9 +40,23 @@ const Info = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: white;
-  text-align: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 `;
+
+const CpuBackground = styled.div<{ animated: boolean }>`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-image: url(${(props) => (props.animated ? ChipGif : ChipStill)});
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+`;
+
 interface Props {
   onChangeContent: (page: string) => void;
 }
@@ -60,24 +74,25 @@ const Home = ({ onChangeContent }: Props) => {
   };
   return (
     <Wrapper>
-      <Image src={currentState === true ? ChipGif : ChipStill} />
-      {currentState === false ? (
-        <Info>
-          <Title>
-            Learn about the logic operations <br />
-            that power your computer!
-          </Title>
+      <CpuBackground animated={currentState}>
+        {currentState === false ? (
+          <Info>
+            <Title>
+              Learn about the logic operations <br />
+              that power your computer!
+            </Title>
 
-          <br />
-          <button
-            type="button"
-            className="btn btn-success"
-            onClick={() => clickPlay(true)}
-          >
-            Play
-          </button>
-        </Info>
-      ) : null}
+            <br />
+            <button
+              type="button"
+              className="btn btn-success"
+              onClick={() => clickPlay(true)}
+            >
+              Play
+            </button>
+          </Info>
+        ) : null}
+      </CpuBackground>
     </Wrapper>
   );
 };
