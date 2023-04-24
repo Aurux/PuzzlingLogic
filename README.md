@@ -12,5 +12,5 @@ React app for building and playing with logic circuits. Follow the link on this 
 
 <picture>
 
- <img alt="YOUR-ALT-TEXT" style="scale: 0.5" src="https://raw.githubusercontent.com/Aurux/PuzzlingLogic/main/puzzling-logic/src/assets/examples/SRLatch-bg.png">
+ <img alt="YOUR-ALT-TEXT" style="scale: 0.5" src="https://raw.githubusercontent.com/Aurux/PuzzlingLogic/main/src/assets/examples/SRLatch-bg.png">
 </picture>
