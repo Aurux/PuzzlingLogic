@@ -154,7 +154,7 @@ const HelpDiv = styled.div`
   flex-direction: column;
   position: relative;
   float: right;
-  width: 80%;
+  width: 85%;
   border: solid #444853;
   border-radius: 0 10px 10px 0;
   justify-content: center;
