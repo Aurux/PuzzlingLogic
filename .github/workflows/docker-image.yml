@@ -31,7 +31,7 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/PuzzlingLogic/puzzling-logic:latest,ghcr.io/${{ github.repository_owner }}/PuzzlingLogic/puzzling-logic:${{ github.run_number }}
+        tags: ghcr.io/${{ github.repository_owner }}/puzzling-logic/puzzling-logic:latest,ghcr.io/${{ github.repository_owner }}/puzzling-logic/puzzling-logic:${{ github.run_number }}
 
     # Optional: Logout from GitHub Container Registry
     - name: Logout from GitHub Container Registry
