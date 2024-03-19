@@ -20,6 +20,6 @@ jobs:
       - name: Build and Push the Image to GHCR
         run: |
           docker login ghcr.io -u ${{ github.repository_owner }} \
-          -p ${{ secret.PAT }}
+          -p ${{ secrets.PAT }}
           docker build . --file Dockerfile --tag ghcr.io/aurux/puzzling-logic:latest
           docker push ghcr.io/aurux/puzzling-logic:latest
