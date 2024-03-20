@@ -2,6 +2,8 @@
 
 React app for building and playing with logic circuits. Follow the link on this page to view the hosted site.
 
+If you'd like to host it yourself then pull the docker image under packages! 
+
 ## To run code in dev mode:
 1. ```npm i```
 2. ```npm run dev```
